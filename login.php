@@ -65,12 +65,14 @@ $(document).ready(function() {
         msg.addClass("text-secondary").text("Verificando...");
 
         $.ajax({
-            url: "app/api/user/login.php",
+            url: "/app/api/user/login.php",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({ email, senha }),
-            success: function(data) {
-                if (data.ok) {
+            success: function(data)
+            {
+                if (data.ok) 
+                {
                     msg.removeClass().addClass("text-success").text("Entrando...");
                     setTimeout(() => window.location.href = "/app/painel", 500);
                 } else {
