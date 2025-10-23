@@ -34,7 +34,7 @@ async function login() {
     const data = await res.json();
     const msg = document.getElementById('msg');
     msg.textContent = data.ok ? 'Entrando...' : data.erro;
-    if (data.ok) setTimeout(() => location.href = 'painel.php', 1000);
+    if (data.ok) setTimeout(() => location.href = '/app/painel', 500);
 }
 </script>
 </body>
