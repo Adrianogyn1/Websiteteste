@@ -1,6 +1,10 @@
 <?php
-$usuario = "Adrianogyn1";      // GitHub username
-$repositorio = "Websiteteste"; // repo
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$usuario = "Adrianogyn1";
+$repositorio = "Websiteteste";
 $branch = "main";
 
 $tmpDir = __DIR__ . "/tmp_update";
@@ -8,65 +12,55 @@ $destDir = __DIR__ . "/app";
 $zipFile = __DIR__ . "/tmp_repo.zip";
 $msg = "";
 
-// Obter último commit
+// Função para obter último commit
+function getUltimoCommit($usuario, $repo, $branch) {
+    $url = "https://api.github.com/repos/$usuario/$repo/commits/$branch";
+    $opts = ["http" => ["header" => "User-Agent: PHP\r\n"]];
+    $context = stream_context_create($opts);
+    $json = @file_get_contents($url, false, $context);
+    if (!$json) return null;
+    $data = json_decode($json, true);
+    return $data['commit']['committer']['date'] ?? null;
+}
+
 $ultimoCommit = getUltimoCommit($usuario, $repositorio, $branch);
 $ultimoCommitData = $ultimoCommit ? date("d/m/Y H:i:s", strtotime($ultimoCommit)) : null;
 
-// Atualizar repositório
-if (isset($_POST['atualizar'])) {
-    $zipUrl = "https://github.com/$usuario/$repositorio/archive/refs/heads/$branch.zip";
-
-    // Baixar ZIP
-    file_put_contents($zipFile, file_get_contents($zipUrl));
-
-    // Limpar pasta temporária
-    if (is_dir($tmpDir)) {
-        $it = new RecursiveDirectoryIterator($tmpDir, RecursiveDirectoryIterator::SKIP_DOTS);
-        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($files as $file) $file->isDir() ? rmdir($file) : unlink($file);
-        rmdir($tmpDir);
-    }
-    mkdir($tmpDir);
-
-    // Extrair ZIP
-    $zip = new ZipArchive;
-    if ($zip->open($zipFile) === TRUE) {
-        $zip->extractTo($tmpDir);
-        $zip->close();
-        $msg = "✅ ZIP extraído na pasta temporária.";
-
-        // Copiar arquivos para a pasta principal
-        $extractedFolder = glob("$tmpDir/*")[0]; // primeira pasta dentro do ZIP
-        recursiveCopy($extractedFolder, $destDir);
-        $msg .= " ✅ Arquivos movidos para $destDir";
-    } else {
-        $msg = "❌ Falha ao extrair ZIP";
-    }
-}
-
-// Função para copiar recursivamente, ignorando o próprio script
+// Função para copiar arquivos recursivamente
 function recursiveCopy($src, $dst) {
-    $dir = opendir($src);
+    if (!is_dir($src)) return;
     if (!is_dir($dst)) mkdir($dst, 0755, true);
-    while (($file = readdir($dir)) !== false) {
+    $files = scandir($src);
+    foreach ($files as $file) {
         if ($file === '.' || $file === '..') continue;
         $srcPath = "$src/$file";
         $dstPath = "$dst/$file";
 
-        // Ignorar o script de atualização
+        // Ignora o próprio script de atualização
         if (basename(__FILE__) === $file && dirname(__FILE__) === $dst) continue;
 
         if (is_dir($srcPath)) {
             recursiveCopy($srcPath, $dstPath);
         } else {
-            copy($srcPath, $dstPath);
+            @copy($srcPath, $dstPath);
         }
     }
-    closedir($dir);
+}
+
+// Função para limpar pasta recursivamente
+function recursiveDelete($dir) {
+    if (!is_dir($dir)) return;
+    $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($files as $file) {
+        $file->isDir() ? @rmdir($file) : @unlink($file);
+    }
+    @rmdir($dir);
 }
 
 // Função para listar arquivos
 function listarArquivos($dir, $prefixo = "") {
+    if (!is_dir($dir)) return;
     $arquivos = scandir($dir);
     echo "<ul>";
     foreach ($arquivos as $arq) {
@@ -83,15 +77,44 @@ function listarArquivos($dir, $prefixo = "") {
     echo "</ul>";
 }
 
-// Função para obter último commit
-function getUltimoCommit($usuario, $repo, $branch) {
-    $url = "https://api.github.com/repos/$usuario/$repo/commits/$branch";
-    $opts = ["http" => ["header" => "User-Agent: PHP\r\n"]];
-    $context = stream_context_create($opts);
-    $json = file_get_contents($url, false, $context);
-    if (!$json) return null;
-    $data = json_decode($json, true);
-    return $data['commit']['committer']['date'] ?? null;
+// Atualizar repositório
+if (isset($_POST['atualizar'])) {
+
+    // Baixar ZIP
+    $zipContent = @file_get_contents("https://github.com/$usuario/$repositorio/archive/refs/heads/$branch.zip");
+    if (!$zipContent) {
+        $msg = "❌ Falha ao baixar o ZIP. Verifique o usuário, repositório ou branch.";
+    } else {
+        file_put_contents($zipFile, $zipContent);
+
+        // Limpar pasta temporária
+        recursiveDelete($tmpDir);
+        mkdir($tmpDir);
+
+        // Extrair ZIP
+        $zip = new ZipArchive;
+        if ($zip->open($zipFile) === TRUE) {
+            $zip->extractTo($tmpDir);
+            $zip->close();
+            $msg = "✅ ZIP extraído na pasta temporária.";
+
+            // Encontrar pasta dentro do ZIP
+            $folders = glob("$tmpDir/*", GLOB_ONLYDIR);
+            if (count($folders) > 0) {
+                recursiveCopy($folders[0], $destDir);
+                $msg .= " ✅ Arquivos movidos para $destDir";
+            } else {
+                $msg .= " ⚠ Nenhuma pasta encontrada no ZIP.";
+            }
+
+        } else {
+            $msg = "❌ Falha ao extrair ZIP.";
+        }
+    }
+
+    // Atualizar último commit após a atualização
+    $ultimoCommit = getUltimoCommit($usuario, $repositorio, $branch);
+    $ultimoCommitData = $ultimoCommit ? date("d/m/Y H:i:s", strtotime($ultimoCommit)) : null;
 }
 ?>
 
@@ -99,17 +122,17 @@ function getUltimoCommit($usuario, $repo, $branch) {
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Atualizador</title>
+<title>Atualizador Seguro</title>
 <style>
-body { font-family: sans-serif; padding: 2rem; background: #f8f9fa; }
-.container { max-width: 800px; margin:auto; background:#fff; padding:2rem; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+body { font-family: sans-serif; padding:2rem; background:#f8f9fa; }
+.container { max-width:800px; margin:auto; background:#fff; padding:2rem; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
 button { padding:.5rem 1rem; font-size:1rem; }
 ul { list-style-type: disc; margin-left:20px; }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>Atualizar Repositório</h2>
+<h2>Atualizar Repositório Websiteteste</h2>
 <form method="post">
 <button name="atualizar" type="submit">🔄 Atualizar</button>
 </form>
@@ -121,7 +144,7 @@ ul { list-style-type: disc; margin-left:20px; }
 <?php endif; ?>
 
 <h3>📂 Conteúdo atual da pasta:</h3>
-<?php if (is_dir($destDir)) listarArquivos($destDir); ?>
+<?php listarArquivos($destDir); ?>
 </div>
 </body>
 </html>

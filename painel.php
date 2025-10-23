@@ -13,6 +13,6 @@ if (!isset($_SESSION['user'])) {
 </head>
 <body>
     <h2>Bem-vindo, <?= htmlspecialchars($_SESSION['user']) ?></h2>
-    <a href="logout.php">Sair</a>
+    <a href="/app/logout.php">Sair</a>
 </body>
 </html>
