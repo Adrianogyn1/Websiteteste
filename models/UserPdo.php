@@ -1,6 +1,7 @@
 <?php
-//require_once 'User.php';
-//require_once 'Database.php';
+// autoload ou requires aqui
+// require_once 'User.php';
+// require_once 'Database.php';
 
 class UserPdo
 {
@@ -9,7 +10,8 @@ class UserPdo
     public function __construct()
     {
         $this->db = new Database();
-        
+
+        // Criação da tabela (somente uma vez)
         $this->db->getPdo()->exec("
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -17,16 +19,24 @@ class UserPdo
                 email VARCHAR(150) UNIQUE NOT NULL,
                 senha VARCHAR(255) NOT NULL,
                 criado_em DATETIME NOT NULL
-            );
+            )
         ");
     }
 
     public function save(User $user): bool
     {
-        return (bool) $this->db->query(
-            "INSERT INTO users (nome, email, senha, criado_em) VALUES (?, ?, ?, ?)",
-            [$user->nome, $user->email, $user->senha, $user->criado_em]
-        );
+        if ($user->id > 0) {
+            // 🔧 Corrigido: UPDATE usa SET, não VALUES
+            return (bool) $this->db->query(
+                "UPDATE users SET nome = ?, email = ?, senha = ?, criado_em = ? WHERE id = ?",
+                [$user->nome, $user->email, $user->senha, $user->criado_em, $user->id]
+            );
+        } else {
+            return (bool) $this->db->query(
+                "INSERT INTO users (nome, email, senha, criado_em) VALUES (?, ?, ?, ?)",
+                [$user->nome, $user->email, $user->senha, $user->criado_em]
+            );
+        }
     }
 
     public function findByEmail(string $email): ?User
@@ -49,9 +59,11 @@ class UserPdo
     {
         $stmt = $this->db->query("SELECT * FROM users ORDER BY id DESC");
         $users = [];
+
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $users[] = User::createFromArray($row);
         }
+
         return $users;
     }
 }

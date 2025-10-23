@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/htdocs/app/models/UserPdo.php';
+//require_once __DIR__ . '/htdocs/app/models/UserPdo.php';
+require_once(dirname(__DIR__, 2) . '/autoload.php');
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

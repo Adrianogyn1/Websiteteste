@@ -5,8 +5,8 @@ spl_autoload_register(function ($class) {
 
     // Mapeia namespaces ou pastas simples
     $paths = [
-        $baseDir . 'class/',     // pasta das classes
-        $baseDir . 'app/',       // se tiver classes dentro de app/
+        $baseDir . 'models/',     // pasta das classes
+      //  $baseDir . 'app/',       // se tiver classes dentro de app/
     ];
 
     foreach ($paths as $path) {
