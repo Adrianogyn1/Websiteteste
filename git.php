@@ -1,7 +1,7 @@
 <?php
-$repoUrl = "https://github.com/usuario/repositorio/archive/refs/heads/main.zip";
+$repoUrl = "https://github.com/Adrianogyn1/Websiteteste/archive/refs/heads/Main.zip";
 $zipFile = __DIR__ . "/repositorio.zip";
-$extractTo = __DIR__ . "/repositorio";
+$extractTo = __DIR__ . "/";
 $msg = "";
 $ultimaAtualizacao = null;
 
