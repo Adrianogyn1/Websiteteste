@@ -16,7 +16,7 @@ if ($id <= 0) {
 
 try {
     $db = (new Database())->getPdo();
-    $stmt = $db->prepare("SELECT * FROM Game WHERE id=:id");
+    $stmt = $db->prepare("SELECT * FROM Carteira WHERE id=:id");
     $stmt->execute(['id' => $id]);
     $game = $stmt->fetch(PDO::FETCH_ASSOC);
 
