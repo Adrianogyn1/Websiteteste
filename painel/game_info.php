@@ -6,9 +6,7 @@ error_reporting(E_ALL);
 require_once(dirname(__DIR__, 1) . '/autoload.php');
 session_start();
 
-use Cassino\PaymanetHistorico;
-use Cassino\GameDificuldade;
-use Cassino\TransasaoType;
+
 
 $gameId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($gameId <= 0) die('Game inválido.');
@@ -54,14 +52,14 @@ foreach ($rows as $r) {
     $ph->bancaInicio = (float)$r['bancaInicio'];
     $ph->bancaFinal = (float)$r['bancaFinal'];
     $ph->tempo = (float)$r['tempo'];
-    $ph->data = new DateTime($r['data']);
-    $ph->dataCriacao = new DateTime($r['dataCriacao']);
+    //$ph->data = new DateTime($r['data']);
+    //$ph->dataCriacao = new DateTime($r['dataCriacao']);
     $ph->dificuldade = GameDificuldade::from((int)$r['dificuldade']);
     $ph->type = TransasaoType::from((int)$r['type']);
 
     $hist[] = $ph;
     $chartLabels[] = $ph->data->format('d/m/Y H:i');
-    $chartData[] = $ph->bancaFinal;
+    $chartData[] = $ph->valor ;// $ph->bancaFinal;
 }
 
 ?>
