@@ -10,7 +10,7 @@ session_start();
 
 
 $page = intval($_GET['page'] ?? 1);
-$pageSize = intval($_GET['pageSize'] ?? 5);
+$pageSize = intval($_GET['pageSize'] ?? 25);
 $search = $_GET['search'] ?? '';
 
 $offset = ($page - 1) * $pageSize;
