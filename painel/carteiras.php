@@ -1,5 +1,4 @@
 <?php include __DIR__.'/includes/header.php'; ?>
-
 <main class="container-fluid pt-5 mt-3">
     <div class="container py-4">
 
@@ -14,65 +13,24 @@
             </button>
         </div>
 
-        <!-- ===== LISTA DE CARTEIRAS EM CARDS ===== -->
+        <!-- ===== CARDS DE CARTEIRAS ===== -->
         <div class="row g-3" id="carteirasList">
-            <!-- Card exemplo estático -->
-            <div class="col-md-4">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="card-title">Carteira Principal</h5>
-                            <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ 2.350,00</span></p>
-                            <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-primary">Apostas</span></p>
-                            <p class="card-text text-muted"><small>Atualizado em 23/10/2025 14:32</small></p>
-                        </div>
-                        <div class="mt-3 d-flex justify-content-between">
-                            <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                                <span class="material-symbols-outlined">edit</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Outro card exemplo -->
-            <div class="col-md-4">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="card-title">Carteira Secundária</h5>
-                            <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ 780,00</span></p>
-                            <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-success">Cassino</span></p>
-                            <p class="card-text text-muted"><small>Atualizado em 20/10/2025 10:18</small></p>
-                        </div>
-                        <div class="mt-3 d-flex justify-content-between">
-                            <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                                <span class="material-symbols-outlined">edit</span>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Cards carregados via JS -->
         </div>
 
-        <!-- ===== MODAL NOVA CARTEIRA ===== -->
+        <!-- ===== MODAL NOVA/EDITAR CARTEIRA ===== -->
         <div class="modal fade" id="novaCarteiraModal" tabindex="-1" aria-labelledby="novaCarteiraLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content border-0 shadow">
                     <div class="modal-header bg-dark text-light">
                         <h5 class="modal-title" id="novaCarteiraLabel">
                             <span class="material-symbols-outlined align-middle">add_circle</span>
-                            Nova Carteira
+                            Carteira
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="formNovaCarteira" method="POST">
+                        <input type="hidden" id="carteiraId">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="nomeCarteira" class="form-label">Nome da Carteira</label>
@@ -82,10 +40,10 @@
                                 <label for="tipoCarteira" class="form-label">Tipo</label>
                                 <select id="tipoCarteira" name="tipo" class="form-select" required>
                                     <option value="">Selecione...</option>
-                                    <option value="Apostas">Apostas</option>
-                                    <option value="Cassino">Cassino</option>
-                                    <option value="Esportes">Esportes</option>
-                                    <option value="Outros">Outros</option>
+                                    <option value="apostas">Apostas</option>
+                                    <option value="cassino">Cassino</option>
+                                    <option value="esportes">Esportes</option>
+                                    <option value="outros">Outros</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -106,40 +64,110 @@
 </main>
 
 <script>
-    // Adicionar nova carteira como card
-    $('#formNovaCarteira').on('submit', function (e) {
-        e.preventDefault();
-        const nome = $('#nomeCarteira').val();
-        const tipo = $('#tipoCarteira').val();
-        const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+const MAX_CARTEIRAS = 10;
 
-        if (nome && tipo && saldo >= 0) {
+// Carregar carteiras
+function loadCarteiras() {
+    $.getJSON('/app/api/carteira/lista.php', function(resp){
+        if(!resp.success) {
+            $('#carteirasList').html('<p class="text-danger">'+resp.msg+'</p>');
+            return;
+        }
+
+        const data = resp.data.data.slice(0, MAX_CARTEIRAS);
+        $('#carteirasList').empty();
+
+        if(data.length === 0){
+            $('#carteirasList').html('<p>Nenhuma carteira cadastrada.</p>');
+            return;
+        }
+
+        data.forEach(c => {
             const card = `
-                <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <div>
-                                <h5 class="card-title">${nome}</h5>
-                                <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ ${saldo}</span></p>
-                                <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-info text-dark">${tipo}</span></p>
-                                <p class="card-text text-muted"><small>Atualizado em ${new Date().toLocaleString()}</small></p>
-                            </div>
-                            <div class="mt-3 d-flex justify-content-between">
-                                <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                                    <span class="material-symbols-outlined">edit</span>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                            </div>
+            <div class="col-md-4" data-id="${c.id}">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">${c.nome}</h5>
+                            <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ ${parseFloat(c.saldo).toFixed(2)}</span></p>
+                            <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-info text-dark">${c.tipo}</span></p>
+                            <p class="card-text text-muted"><small>Atualizado em ${c.updated_at}</small></p>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-secondary btn-edit" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete" title="Excluir"><span class="material-symbols-outlined">delete</span></button>
                         </div>
                     </div>
-                </div>`;
+                </div>
+            </div>`;
             $('#carteirasList').append(card);
+        });
+    });
+}
+
+// Criar ou atualizar carteira
+$('#formNovaCarteira').on('submit', function(e){
+    e.preventDefault();
+    const id = $('#carteiraId').val() || 0;
+    const nome = $('#nomeCarteira').val();
+    const tipo = $('#tipoCarteira').val();
+    const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+
+    if(!nome || !tipo || saldo < 0) return;
+
+    $.ajax({
+        url: '/app/api/carteira/save.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ id, nome, tipo, saldo }),
+        success: function(resp){
+            alert(resp.msg);
             $('#novaCarteiraModal').modal('hide');
-            this.reset();
+            $('#formNovaCarteira')[0].reset();
+            $('#carteiraId').val('');
+            loadCarteiras();
         }
     });
+});
+
+// Editar carteira
+$('#carteirasList').on('click', '.btn-edit', function(){
+    const card = $(this).closest('[data-id]');
+    const id = card.data('id');
+
+    $.getJSON(`/app/api/carteira/get.php?id=${id}`, function(resp){
+        if(!resp.success) return alert(resp.msg);
+
+        const c = resp.data;
+        $('#carteiraId').val(c.id);
+        $('#nomeCarteira').val(c.nome);
+        $('#tipoCarteira').val(c.tipo);
+        $('#saldoInicial').val(c.saldo);
+        $('#novaCarteiraModal').modal('show');
+    });
+});
+
+// Excluir carteira
+$('#carteirasList').on('click', '.btn-delete', function(){
+    if(!confirm('Deseja realmente excluir esta carteira?')) return;
+
+    const card = $(this).closest('[data-id]');
+    const id = card.data('id');
+
+    $.ajax({
+        url: '/app/api/carteira/delete.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ id }),
+        success: function(resp){
+            alert(resp.msg);
+            loadCarteiras();
+        }
+    });
+});
+
+// Inicial
+$(function(){ loadCarteiras(); });
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>

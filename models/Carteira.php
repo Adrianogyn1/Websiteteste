@@ -1,12 +1,4 @@
 <?php
-/*
-require_once 'Database.php';
-require_once 'LinkGame.php';
-require_once 'GestaoConfig.php';
-require_once 'GestaoHistorico.php';
-require_once 'PaymanetHistorico.php';
-require_once 'TransasaoType.php';
-*/
 
 class Carteira
 {
@@ -22,6 +14,8 @@ class Carteira
     public string $senha = "";
     public bool $teste = false;
     public bool $selected = false;
+    public string $created_at ='';
+    public string $update_at ='';
 
     /** @var LinkGame[] */
     public array $gamesLink = [];
