@@ -94,7 +94,7 @@ let chart;
 
 function atualizarDashboard(carteiraId = 0) {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', `/api/dashboard.php?carteiraId=${carteiraId}`, true);
+    xhr.open('GET', `/app/api/dashboard.php?carteiraId=${carteiraId}`, true);
 
     xhr.onreadystatechange = function() {
         if(xhr.readyState === 4) {
