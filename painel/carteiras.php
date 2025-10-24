@@ -50,7 +50,7 @@
                             </div>
                             
                            <div class="mb-3">
-                                <label for="carteiraRelatorio" class="form-label">Login</label>
+                                <label for="carteiraRelatorio" class="form-label">Use Relatório</label>
                                 <input type="checkbox" class="form-control" id="carteiraRelatorio" name="useRelatorio" >
                             </div>
                             
@@ -127,7 +127,7 @@ $('#formNovaCarteira').on('submit', function(e){
         url: '/app/api/carteira/save.php',
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ id, nome, tipo, saldo }),
+        data: JSON.stringify({ id, nome }),
         success: function(resp){
             alert(resp.msg);
             $('#novaCarteiraModal').modal('hide');
@@ -144,13 +144,13 @@ $('#carteirasList').on('click', '.btn-edit', function(){
     const id = card.data('id');
 
     $.getJSON(`/app/api/carteira/get.php?id=${id}`, function(resp){
-        if(!resp.success) return alert(resp.msg);
+        if(!resp.sucess) return alert(resp.msg);
 
         const c = resp.data;
         $('#carteiraId').val(c.id);
         $('#nomeCarteira').val(c.nome);
-        $('#tipoCarteira').val(c.tipo);
-        $('#saldoInicial').val(c.saldo);
+     //   $('#carteiraUrl').val(c.url);
+       // $('#carteiraLogin').val(c.login);
         $('#novaCarteiraModal').modal('show');
     });
 });
