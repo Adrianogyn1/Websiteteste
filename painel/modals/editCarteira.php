@@ -7,7 +7,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 
-    require_once(dirname(__DIR__, 1) . '/autoload.php');
+    require_once(dirname(__DIR__, 2) . '/autoload.php');
 session_start();
 
     $id=intval($_GET['id'] ?? 0);

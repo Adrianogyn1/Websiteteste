@@ -10,7 +10,7 @@
                 <span class="material-symbols-outlined align-middle text-primary">account_balance_wallet</span>
                 Minhas Carteiras
             </h3>
-            <button class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#novaCarteiraModal">
+            <button class="btn btn-primary d-flex align-items-center" onclose="EditarCarteira(0)" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
                 <span class="material-symbols-outlined me-1">add</span> Nova Carteira
             </button>
         </div>
@@ -164,19 +164,7 @@ $('#carteirasList').on('click', '.btn-edit', function(){
     const card = $(this).closest('[data-id]');
     const id = card.data('id');
 
-    $.ajax({
-        url: '/app/painel/modals/editCarteira.php',
-        method: 'GET',
-        contentType: 'application/html',
-        data: JSON.stringify({ id }),
-        success: function(resp)
-        {
-           // alert(resp.msg);
-          //  loadCarteiras();
-          $('html').append(resp);
-          $('#modalEdit').modal('show');
-        }
-    });
+    EditarCarteira(id);
 });
 
 // Excluir carteira
@@ -218,6 +206,22 @@ $('#carteirasList').on('click', '.btn-select', function(){
         }
     });
 });
+
+function EditarCarteira(id){
+    $.ajax({
+        url: '/app/painel/modals/editCarteira.php?id='+id,
+        method: 'GET',
+        contentType: 'application/html',
+        //data: JSON.stringify({ id }),
+        success: function(resp)
+        {
+           // alert(resp.msg);
+          //  loadCarteiras();
+          $('html').append(resp);
+          $('#modalEdit').modal('show');
+        }
+    });
+}
 
 // Inicial
 $(function(){ loadCarteiras(); });
