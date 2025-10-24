@@ -19,6 +19,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
 
 
 
