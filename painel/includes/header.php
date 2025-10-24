@@ -3,6 +3,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ?>
+
+<?php
+
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -29,9 +39,6 @@ if (session_status() === PHP_SESSION_NONE) {
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-
-
-
 
     <style>
         body {
@@ -85,13 +92,13 @@ if (session_status() === PHP_SESSION_NONE) {
     <a href="historico.php">
         <span class="material-symbols-outlined">history</span> Histórico
     </a>
-    <a href="usuarios.php">
-        <span class="material-symbols-outlined">group</span> Usuários
+    <a href="carteira.php">
+        <span class="material-symbols-outlined">group</span> Carteira
     </a>
     <a href="configuracoes.php">
         <span class="material-symbols-outlined">settings</span> Configurações
     </a>
-            <a href="#" class="btn btn-sm btn-outline-light">Perfil</a>
+            <a href="carteira.php" class="btn btn-sm btn-outline-light">Perfil</a>
             <a href="logout.php" class="btn btn-sm btn-danger">Sair</a>
         </div>
     </div>
