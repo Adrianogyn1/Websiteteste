@@ -1,3 +1,7 @@
+<?php include __DIR__.'/includes/header.php'; ?>
+<?php include __DIR__.'/includes/menu.php'; ?>
+
+
 <?php
 /*<!DOCTYPE html>
 <html lang="pt-BR">
