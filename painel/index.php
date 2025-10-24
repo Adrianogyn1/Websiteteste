@@ -75,7 +75,7 @@
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Avg Hora</h6>

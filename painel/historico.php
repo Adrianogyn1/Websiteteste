@@ -22,7 +22,7 @@
 
         <!-- ===== RESUMO ===== -->
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-4 col-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-success" style="font-size: 36px;">arrow_downward</span>
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-danger" style="font-size: 36px;">arrow_upward</span>
@@ -42,7 +42,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-primary" style="font-size: 36px;">account_balance_wallet</span>
