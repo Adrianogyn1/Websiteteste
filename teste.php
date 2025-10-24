@@ -16,7 +16,7 @@ $linkgame = new LinkGame();
 $linkgame->createTable();
 echo "<br/>table LinkGame ok";
 
-$Provedor = new Provedor();
+$Provedor = new ProvedorGame();
 $Provedor->createTable();
 echo "<br/>table Provedor ok";
 
