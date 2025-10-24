@@ -1,7 +1,10 @@
 <?php
+
+require_once(__DIR__.'/models/enums.php');
 spl_autoload_register(function ($class) {
     // Caminho base do projeto (raiz)
     $baseDir = __DIR__ . '/';
+
 
     // Mapeia namespaces ou pastas simples
     $paths = [
