@@ -38,7 +38,7 @@ try {
         $carteira->id = $c['id'];
         $carteira->nome = $c['nome'];
         $carteira->PayerId = $c['PayerId'];
-        $carteira->db = new Database(); // injetando PDO ou Database para métodos
+        //$carteira->db = new Database(); // injetando PDO ou Database para métodos
 
         // Buscar valores
        // $carteira->saldo = $carteira->GetSaldo();
@@ -79,8 +79,8 @@ try {
     } else {
         $c = $carteiras[0];
         $result = [
-            'saldo' => 0,//$c->GetSaldo(),
-            'deposito' =>0,//=> $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
+            'saldo' => $c->GetSaldo(),
+            'deposito' => $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
             'retirada' => 0,//$c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()),
             'lucro' => 0,//$c->GetBalance(new DateTime('1970-01-01'), new DateTime()),
             'dias' => 7,
