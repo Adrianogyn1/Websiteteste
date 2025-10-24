@@ -66,7 +66,8 @@ foreach ($rows as $r) {
 }
 
 ?>
-
+<?php
+/*
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -80,6 +81,8 @@ img.game-img { max-width: 150px; height: auto; display:block; margin-bottom: 10p
 </style>
 </head>
 <body class="bg-light">
+    */
+    ?>
 <div class="container py-4">
     <h3 class="mb-3">Histórico do Game: <?= htmlspecialchars($gameData['nome']) ?></h3>
 

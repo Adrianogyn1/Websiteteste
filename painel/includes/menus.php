@@ -1,4 +1,6 @@
-<div class="sidebar">
+
+<?php
+/*<div class="sidebar">
     <a href="index.php" class="active">
         <span class="material-symbols-outlined">dashboard</span> Dashboard
     </a>
@@ -14,4 +16,5 @@
     <a href="configuracoes.php">
         <span class="material-symbols-outlined">settings</span> Configurações
     </a>
-</div>
+</div>*/
+?>
