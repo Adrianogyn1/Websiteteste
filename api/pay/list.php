@@ -48,6 +48,10 @@ try {
     $stmt->execute();
 
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($data as $row)
+    {
+        $row['data'] = Helps::mysqlTicksToDateTime($row['data'] );
+    }
 
     $msg = new ApiMessage(true, "Lista carregada", ['data' => $data, 'totalPages' => $totalPages]);
     $msg->toJson();
