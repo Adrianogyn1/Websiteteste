@@ -53,7 +53,7 @@ try {
         $row['data'] = Helps::mysqlTicksToDateTime($row['data'] );
     }
     $carteira = new Carteira();
-    $carteira.read($carteiraId);
+   $carteira= $carteira->read($carteiraId);
      $fim = new \DateTime();
     $inicio = (clone $fim)->modify('-7 days');
      
