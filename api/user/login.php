@@ -30,8 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (password_verify($senha, $user->senha)) {
             $_SESSION['user'] = $user->email;
-            $_SESSION['user']['id'] = $user->id;
-           // $_SESSION['id'] = $user->id;
+           // $_SESSION['user']['id'] = $user->id;
+            $_SESSION['id'] = $user->id;
             
             
             $msg->sucess = true;

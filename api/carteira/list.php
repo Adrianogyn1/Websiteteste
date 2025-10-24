@@ -11,7 +11,7 @@ if (!isset($_SESSION['user'])) {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
-$userId = $_SESSION['user']['id'] ?? 0;
+$userId = $_SESSION['id'] ?? 0;
 
 
 $page = intval($_GET['page'] ?? 1);
