@@ -21,9 +21,23 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <label for="selectCarteira" class="form-label">Selecione a carteira:</label>
     <select id="selectCarteira" class="form-select">
         <option value="0">Todas</option>
-        <?php foreach($carteiras as $c): ?>
-            <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['nome']) ?></option>
-        <?php endforeach; ?>
+        <?php foreach($carteiras as $c): 
+        if($c->selected)
+        {
+            ?>
+                         <option value="<?= $c['id'] ?>" selected="true"><?= htmlspecialchars($c['nome']) ?></option>
+            <?php
+        }
+        else
+        {
+                        ?>
+                         <option value="<?= $c['id'] ?>" ><?= htmlspecialchars($c['nome']) ?></option>
+            <?php
+        }
+        ?>
+
+                  
+     <?php endforeach; ?>
     </select>
 </div>
 
