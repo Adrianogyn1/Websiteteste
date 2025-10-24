@@ -70,8 +70,8 @@ const MAX_CARTEIRAS = 10;
 
 // Carregar carteiras
 function loadCarteiras() {
-    $.getJSON('/app/api/carteira/lista.php', function(resp){
-        if(!resp.success) {
+    $.getJSON('/app/api/carteira/list.php', function(resp){
+        if(!resp.sucess) {
             $('#carteirasList').html('<p class="text-danger">'+resp.msg+'</p>');
             return;
         }
