@@ -6,7 +6,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $userId = $_SESSION['userId'] ?? 0;
+    $userId = $_SESSION['id'] ?? 0;
     if (!$userId) throw new Exception("Usuário não logado");
 
     $carteiraId = intval($_GET['carteiraId'] ?? 0);

@@ -5,7 +5,7 @@
 require_once __DIR__.'/../autoload.php';
 session_start();
 
-$userId = $_SESSION['userId'] ?? 0;
+$userId = $_SESSION['id'] ?? 0;
 
 $db = (new Database())->getPdo();
 $stmt = $db->prepare("SELECT id, nome FROM Carteira WHERE PayerId = :uid");
