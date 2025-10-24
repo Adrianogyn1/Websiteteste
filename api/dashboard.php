@@ -17,7 +17,7 @@ $carteiraId = isset($_GET['carteiraId']) ? intval($_GET['carteiraId']) : null;
 try {
     $db = (new Database())->getPdo();
     $dash = new Dashboard($db, $carteiraId);
-    $dash->load(); // Carrega últimos 7 dias
+    $dash->carregar(); // Carrega últimos 7 dias
     echo json_encode(['success' => true, 'msg' => 'Dashboard carregado', 'data' => json_decode($dash->toJson())]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'msg' => $e->getMessage()]);

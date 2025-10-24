@@ -21,8 +21,10 @@ class Dashboard
         $this->carteiraId = $carteiraId;
     }
 
-    public function carregar(\DateTime $inicio, \DateTime $fim): void
+    public function carregar(\DateTime $inicio=null,DateTime $fim=null): void
     {
+        if (!$fim) $fim = new \DateTime();
+        if (!$inicio) $inicio = (clone $fim)->modify('-7 days');
         // Filtros base
         $where = "WHERE data BETWEEN :inicio AND :fim";
         $params = [
