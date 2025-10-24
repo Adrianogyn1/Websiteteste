@@ -26,8 +26,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-success" style="font-size: 36px;">arrow_downward</span>
-                        <h4 class="text-muted">Entradas</h6>
-                        <h2 class="fw-bold text-success" id="totalEntradas">R$ 0,00</h4>
+                        <h6 class="text-muted">Entradas</h6>
+                        <h5 class="fw-bold text-success" id="totalEntradas">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -36,8 +36,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-danger" style="font-size: 36px;">arrow_upward</span>
-                        <h4 class="text-muted">Saídas</h6>
-                        <h2 class="fw-bold text-danger" id="totalSaidas">R$ 0,00</h4>
+                        <h6 class="text-muted">Saídas</h6>
+                        <h5 class="fw-bold text-danger" id="totalSaidas">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -46,8 +46,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-primary" style="font-size: 36px;">account_balance_wallet</span>
-                        <h4 class="text-muted">Saldo Final</h6>
-                        <h2 class="fw-bold text-primary" id="saldoFinal">R$ 0,00</h4>
+                        <h6 class="text-muted">Saldo Final</h6>
+                        <h5 class="fw-bold text-primary" id="saldoFinal">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -119,7 +119,7 @@ $(function() {
 
             tbody.append(`
                 <tr>
-                    <td>${item.id}</td>
+                    
                     <td>${item.data}</td>
                     <td>${tipo}</td>
                     <td>${item.desc}</td>
