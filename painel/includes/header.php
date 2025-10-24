@@ -18,7 +18,7 @@ if (!isset($_SESSION['user'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo</title>
+    <title>Painel</title>
 
  <!-- Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -92,14 +92,14 @@ if (!isset($_SESSION['user'])) {
     <a href="historico.php">
         <span class="material-symbols-outlined">history</span> Histórico
     </a>
-    <a href="carteira.php">
+    <a href="carteiras.php">
         <span class="material-symbols-outlined">group</span> Carteira
     </a>
     <a href="configuracoes.php">
         <span class="material-symbols-outlined">settings</span> Configurações
     </a>
-            <a href="carteira.php" class="btn btn-sm btn-outline-light">Perfil</a>
-            <a href="logout.php" class="btn btn-sm btn-danger">Sair</a>
+            <a href="perfil.php" class="btn btn-sm btn-outline-light">Perfil</a>
+            <a href="/app/api/user/logout.php" class="btn btn-sm btn-danger">Sair</a>
         </div>
     </div>
 </nav>
