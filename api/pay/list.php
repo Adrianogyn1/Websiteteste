@@ -12,7 +12,7 @@ session_start();
 $page = intval($_GET['page'] ?? 1);
 $pageSize = intval($_GET['pageSize'] ?? 25);
 $search = $_GET['search'] ?? '';
-$carteiraId =2;
+$carteiraId =intval($_GET['id'] ?? 2);;
 
 $offset = ($page - 1) * $pageSize;
 

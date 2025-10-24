@@ -10,14 +10,19 @@ error_reporting(E_ALL);
     require_once(dirname(__DIR__, 1) . '/autoload.php');
 session_start();
 
-    $id=2;
-    $carteira = (new Carteira())->read($id);
+    $id=intval($_GET['id'] ?? 0);
+    
+    $carteira = new Carteira();
+    if($id)
+    $carteira->read($id);
+    
     ?>
     
     
      <div class="modal fade" id="modalEdit" tabindex="-1" aria-labelledby="novaCarteiraLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content border-0 shadow">
+                   
                     <div class="modal-header bg-dark text-light">
                         <h5 class="modal-title" id="novaCarteiraLabel">
                             <span class="material-symbols-outlined align-middle">add_circle</span>
@@ -25,8 +30,10 @@ session_start();
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
+                    
                     <form id="formNovaCarteira" method="POST">
-                        <input type="hidden" id="carteiraId">
+                        
+                        <input type="hidden" id="carteiraId" value="<?php $carteira->id; ?>">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="nomeCarteira" class="form-label">Nome da Carteira</label>
@@ -35,12 +42,12 @@ session_start();
                             
                             <div class="mb-3">
                                 <label for="carteiraUrl" class="form-label">Url</label>
-                                <input type="text" class="form-control" id="carteiraUrl" name="url" value="<?php $carteira->url; ?> >
+                                <input type="text" class="form-control" id="carteiraUrl" name="url" value="<?php $carteira->url; ?>">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="carteiraLogin" class="form-label">Login</label>
-                                <input type="text" class="form-control" id="carteiraLogin" name="login" value="<?php $carteira->login; ?> >
+                                <input type="text" class="form-control" id="carteiraLogin" name="login" value="<?php $carteira->login; ?>">
                             </div>
                             
                            <div class="mb-3">
@@ -52,10 +59,48 @@ session_start();
                             
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="Close()" <?php /*data-bs-dismiss="modal"*/?> >Cancelar</button>
+                            <button type="submit" class="btn btn-primary" onclick="Salvar()">Salvar</button>
                         </div>
                     </form>
                 </div>
             </div>
+            
+            <script>
+            
+                function Salvar()
+                {
+                    
+    const id = $('#carteiraId').val() || 0;
+    const nome = $('#nomeCarteira').val();
+   // const tipo = $('#tipoCarteira').val();
+   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+
+    if(!nome ) return;
+
+    $.ajax({
+        url: '/app/api/carteira/save.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ id, nome }),
+        success: function(resp)
+        {
+            
+            if(resp.sucess){
+                alert(resp.msg);
+            
+            }else{
+                alert(resp.msg);
+            }
+        }
+    });
+
+                }
+                
+                function Close()
+                {
+                    $('html').remove('#modalEdit');
+                }
+                
+            </script>
         </div>
