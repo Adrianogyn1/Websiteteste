@@ -28,7 +28,7 @@ try {
         $params[':carteira'] = $carteiraId;
     }
     else{
-        $sql .= " AND carteiraId = :carteira";
+        $sql .= " where carteiraId = :carteira";
         $params[':carteira'] = $carteiraId;
     }
 
