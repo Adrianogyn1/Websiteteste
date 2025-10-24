@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<?php
+/*<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7,6 +8,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+*/?>
 
 <style>
 .card {
@@ -31,8 +33,10 @@
     justify-content: center;
 }
 </style>
+<?php
+/*
 </head>
-<body>
+<body>*/?>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Games</h3>
@@ -209,5 +213,12 @@ function playGame(url) { if(url) window.open(url, '_blank'); else alert('URL do 
 
 $(function(){ loadGames(); });
 </script>
-</body>
-</html>
+<?php
+/*</body>
+</html>*/?>
+
+<?php include __DIR__.'/includes/footer.php'; ?>
+
+
+
+
