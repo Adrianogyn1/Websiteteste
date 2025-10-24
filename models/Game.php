@@ -130,9 +130,13 @@ class Game
         return null;
     }
 
-    public function all(): array
-    {
-        $stmt = $this->db->query("SELECT * FROM games ORDER BY id DESC");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    public function all(int $skip = 0, int $take = 10): array
+{
+    $stmt = $this->db->prepare("SELECT * FROM games ORDER BY nome DESC LIMIT :skip, :take");
+    $stmt->bindValue(':skip', $skip, PDO::PARAM_INT);
+    $stmt->bindValue(':take', $take, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }
