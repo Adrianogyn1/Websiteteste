@@ -102,6 +102,39 @@ $(function() {
         {  data: '22/10/2025', tipo: 'Aposta', desc: 'Premiação', valor: 120 },
         {  data: '23/10/2025', tipo: 'Aposta', desc: 'Retirada', valor: -100 },
     ];
+    
+let currentPage = 1;
+const pageSize = 20;
+
+function loadHistorico(page = 1, search = '') {
+    currentPage = page;
+    $.getJSON(`/app/api/pay/list.php`, { page, pageSize, search }, function(resp) {
+        if (!resp.sucess) {
+            alert(resp.msg);
+           // $('#gamesList').html('<p class="text-danger">' + resp.msg + '</p>');
+            return;
+        }
+        
+        const data = resp.data.data;
+        const totalPages = resp.data.totalPages;
+      //  $('#gamesList').empty();
+        
+        if (data.length === 0) {
+alert('nada...')  ;
+return;
+        }
+        historico=[];
+        data.forEach(hist => 
+        {
+            console.log(hist);
+            historico.push({ data: '20/10/2025', tipo: 'Entrada', desc: 'Depósito inicial', valor: 500 });
+        });
+        
+       // renderPagination(totalPages);
+    });
+    
+    carregarTabela();
+}
 
     function carregarTabela() {
         const tbody = $('#tabelaHistorico tbody');

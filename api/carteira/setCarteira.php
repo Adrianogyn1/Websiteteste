@@ -42,7 +42,7 @@ $stmt->execute([':id' => $id]);
 
     }
         
-    (new ApiMessage(true, 'Carteira atualizada com sucesso',$carteira))->toJson();
+    (new ApiMessage(true, 'Carteira atualizada com sucesso'))->toJson();
         
 
 } catch (Exception $e) {
