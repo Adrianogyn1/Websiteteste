@@ -5,15 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Games</title>
 
-<!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 .card-img-top {
     width: 100%;
-    height: 150px;
+    height: 120px;
     object-fit: cover;
+}
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: .5rem;
+    text-align: center;
+}
+.card-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
 }
 </style>
 </head>
@@ -35,7 +50,7 @@
     </nav>
 </div>
 
-<!-- Modal para cadastro/edição -->
+<!-- Modal -->
 <div class="modal fade" id="gameModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -59,8 +74,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="saveGame">Salvar</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="saveGame">Salvar</button>
       </div>
     </div>
   </div>
@@ -91,18 +106,17 @@ function loadGames(page = 1, search = '') {
 
         data.forEach(game => {
             const html = `
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="${game.image}" class="card-img-top" alt="${game.nome}">
-                    <div class="card-body">
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100">
+                    <img src="${game.image || 'https://via.placeholder.com/300x150?text=Sem+Imagem'}" class="card-img-top" alt="${game.nome}">
+                    <div class="card-body d-flex flex-column justify-content-between">
                         <h5 class="card-title">${game.nome}</h5>
-                        <div class="d-flex justify-content-between">
+                        <div class="card-buttons mt-2">
                             <button class="btn btn-sm btn-primary" onclick="playDemo('${game.demo}')">Demo</button>
                             <button class="btn btn-sm btn-success" onclick="playGame('${game.url}')">Jogar</button>
-                        </div>
-                        <div class="d-flex justify-content-between mt-2">
+                            <button class="btn btn-sm btn-info text-white" onclick="infoGame(${game.id})">Info</button>
                             <button class="btn btn-sm btn-warning" onclick="editGame(${game.id})">Editar</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteGame(${game.id})">Deletar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteGame(${game.id})">Excluir</button>
                         </div>
                     </div>
                 </div>
@@ -174,7 +188,6 @@ function editGame(id) {
 
 function deleteGame(id) {
     if (!confirm('Deseja realmente deletar este game?')) return;
-
     $.ajax({
         url: '/app/api/games/delete.php',
         method: 'POST',
@@ -187,10 +200,13 @@ function deleteGame(id) {
     });
 }
 
+function infoGame(id) {
+    window.location.href = `game_info.php?id=${id}`;
+}
+
 function playDemo(url) { if(url) window.open(url, '_blank'); else alert('Demo não disponível'); }
 function playGame(url) { if(url) window.open(url, '_blank'); else alert('URL do jogo não disponível'); }
 
-// Inicializa lista
 $(function(){ loadGames(); });
 </script>
 </body>

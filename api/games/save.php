@@ -20,7 +20,7 @@ try {
     $db = (new Database())->getPdo();
 
     if ($id > 0) {
-        $stmt = $db->prepare("UPDATE games SET nome=:nome, url=:url, demo=:demo, image=:image WHERE id=:id");
+        $stmt = $db->prepare("UPDATE Game SET nome=:nome, url=:url, demo=:demo, image=:image WHERE id=:id");
         $stmt->execute(compact('nome', 'url', 'demo', 'image', 'id'));
         $msg = new ApiMessage(true, "Game atualizado com sucesso");
     } else {

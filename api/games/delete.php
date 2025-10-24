@@ -1,6 +1,13 @@
 <?php
-require_once __DIR__ . '/../Database.php';
-require_once __DIR__ . '/../ApiMessage.php';
+ini_set('display_errors', 1);
+
+ini_set('display_startup_errors', 1);
+
+error_reporting(E_ALL);
+
+require_once(dirname(__DIR__, 2) . '/autoload.php');
+session_start();
+
 
 $input = json_decode(file_get_contents('php://input'), true);
 $id = intval($input['id'] ?? 0);
@@ -11,7 +18,7 @@ if ($id <= 0) {
 
 try {
     $db = (new Database())->getPdo();
-    $stmt = $db->prepare("DELETE FROM games WHERE id=:id");
+    $stmt = $db->prepare("DELETE FROM Game WHERE id=:id");
     $stmt->execute(['id' => $id]);
 
     (new ApiMessage(true, "Game deletado com sucesso"))->toJson();

@@ -19,7 +19,7 @@ try {
     $db = (new Database())->getPdo();
 
     $params = [];
-    $sql = "SELECT * FROM games";
+    $sql = "SELECT * FROM Game";
     if ($search) {
         $sql .= " WHERE nome LIKE :search";
         $params[':search'] = "%$search%";
