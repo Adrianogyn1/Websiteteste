@@ -1,5 +1,5 @@
-<?php include 'header.php'; ?>
-<?php include 'menu.php'; ?>
+<?php include '/includes/header.php'; ?>
+<?php include '/includes/menu.php'; ?>
 
 <?php
 ini_set('display_errors', 1);
@@ -162,4 +162,4 @@ $(function() {
     });
 });
 </script>
-<?php include 'footer.php'; ?>
+<?php include '/includes/footer.php'; ?>

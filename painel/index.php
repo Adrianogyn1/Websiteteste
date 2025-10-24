@@ -1,5 +1,5 @@
-<?php include 'header.php'; ?>
-<?php include 'menu.php'; ?>
+<?php include '/includes/header.php'; ?>
+<?php include '/includes/menu.php'; ?>
 
 <?php
 
@@ -82,7 +82,7 @@ new Chart(ctx, {
 });
 </script>
 
-<?php include 'footer.php'; ?>
+<?php include '/includes/footer.php'; ?>
 
 
 
