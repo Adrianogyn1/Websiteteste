@@ -61,10 +61,10 @@ try {
     // Agregar todos se for "Todas"
     if ($carteiraId === 0) {
         $result = [
-            'saldo' =>  array_sum(array_map(fn($c) => $c->GetSaldo(), $carteiras)),
-            'deposito' => array_sum(array_map(fn($c) => $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
-            'retirada' => array_sum(array_map(fn($c) => $c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
-            'lucro' => array_sum(array_map(fn($c) => $c->GetBalance(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
+            'saldo' =>  0,//array_sum(array_map(fn($c) => $c->GetSaldo(), $carteiras)),
+            'deposito' => 0,//array_sum(array_map(fn($c) => $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
+            'retirada' => 0,//array_sum(array_map(fn($c) => $c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
+            'lucro' => 0,//array_sum(array_map(fn($c) => $c->GetBalance(new DateTime('1970-01-01'), new DateTime()), $carteiras)),
             'dias' => 7,
             'avg_dia' => array_sum(array_map(fn($c) => $c->lucro, $carteiras))/7,
             'chart_labels' => $carteiras[0]->chart_labels ?? [],
@@ -73,10 +73,10 @@ try {
     } else {
         $c = $carteiras[0];
         $result = [
-            'saldo' => $c->GetSaldo(),
-            'deposito' => $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
-            'retirada' => $c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()),
-            'lucro' => $c->GetBalance(new DateTime('1970-01-01'), new DateTime()),
+            'saldo' => 0,//$c->GetSaldo(),
+            'deposito' 0,//=> $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
+            'retirada' => 0,//$c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()),
+            'lucro' => 0,//$c->GetBalance(new DateTime('1970-01-01'), new DateTime()),
             'dias' => 7,
             'avg_dia' => $c->lucro/7,
             'chart_labels' => $c->chart_labels,
