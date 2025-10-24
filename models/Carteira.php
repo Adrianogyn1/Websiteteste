@@ -78,7 +78,7 @@ class Carteira
     public function create(): bool
     {
         $this->db->query("
-            INSERT INTO carteiras 
+            INSERT INTO Carteira 
             (nome, meta, useRelatorio, PayerId, url, login, senha, teste, selected,created_at,update_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(),NOW())
         ", [
@@ -101,7 +101,7 @@ class Carteira
     {
         if ($this->id <= 0) return false;
         $this->db->query("
-            UPDATE carteiras SET 
+            UPDATE Carteira SET 
                 nome = ?, 
                 meta = ?, 
                 useRelatorio = ?, 
@@ -133,13 +133,13 @@ class Carteira
     public function delete(): bool
     {
         if ($this->id <= 0) return false;
-        $this->db->query("DELETE FROM carteiras WHERE id = ?", [$this->id]);
+        $this->db->query("DELETE FROM Carteira WHERE id = ?", [$this->id]);
         return true;
     }
 
     public function read(int $id): ?Carteira
     {
-        $stmt = $this->db->query("SELECT * FROM carteiras WHERE id = ?", [$id]);
+        $stmt = $this->db->query("SELECT * FROM Carteira WHERE id = ?", [$id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$data) return null;
 
@@ -155,7 +155,7 @@ class Carteira
         $this->selected = (bool)$data['selected'];
 
         // Carregar relações
-        $this->loadRelations();
+        //$this->loadRelations();
 
         return $this;
     }
