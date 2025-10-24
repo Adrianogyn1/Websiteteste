@@ -1,25 +1,23 @@
 <?php
 ini_set('display_errors', 1);
-
 ini_set('display_startup_errors', 1);
-
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 1) . '/autoload.php');
 session_start();
 
-
+use Cassino\PaymanetHistorico;
 use Cassino\GameDificuldade;
 use Cassino\TransasaoType;
-use Cassino\PaymanetHistorico;
 
-// Pegar ID do game
 $gameId = isset($_GET['id']) ? intval($_GET['id']) : 0;
-if ($gameId <= 0) {
-    die('Game inválido.');
-}
+if ($gameId <= 0) die('Game inválido.');
 
 $db = (new Database())->getPdo();
+
+// Filtrar período
+$startDate = isset($_GET['start']) ? $_GET['start'] : null;
+$endDate   = isset($_GET['end']) ? $_GET['end'] : null;
 
 // Buscar info do game
 $stmt = $db->prepare("SELECT * FROM Game WHERE id = :id");
@@ -28,12 +26,23 @@ $gameData = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$gameData) die('Game não encontrado.');
 
 // Buscar histórico de pagamentos
-$stmt = $db->prepare("SELECT * FROM PaymanetHistorico WHERE gameId = :gameId ORDER BY data ASC");
-$stmt->execute(['gameId' => $gameId]);
+$sql = "SELECT * FROM PaymanetHistorico WHERE gameId = :gameId";
+$params = ['gameId' => $gameId];
+if ($startDate && $endDate) {
+    $sql .= " AND data BETWEEN :start AND :end";
+    $params['start'] = $startDate . ' 00:00:00';
+    $params['end']   = $endDate . ' 23:59:59';
+}
+$sql .= " ORDER BY data ASC";
+
+$stmt = $db->prepare($sql);
+$stmt->execute($params);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Criar objetos PaymanetHistorico
 $hist = [];
+$chartLabels = [];
+$chartData = [];
+
 foreach ($rows as $r) {
     $ph = new PaymanetHistorico();
     $ph->id = (int)$r['id'];
@@ -51,6 +60,8 @@ foreach ($rows as $r) {
     $ph->type = TransasaoType::from((int)$r['type']);
 
     $hist[] = $ph;
+    $chartLabels[] = $ph->data->format('d/m/Y H:i');
+    $chartData[] = $ph->bancaFinal;
 }
 
 ?>
@@ -62,13 +73,16 @@ foreach ($rows as $r) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Histórico do Game: <?= htmlspecialchars($gameData['nome']) ?></title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <style>
 img.game-img { max-width: 150px; height: auto; display:block; margin-bottom: 10px; }
 .btn-group { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 15px; }
 </style>
 </head>
 <body class="bg-light">
-
 <div class="container py-4">
     <h3 class="mb-3">Histórico do Game: <?= htmlspecialchars($gameData['nome']) ?></h3>
 
@@ -81,10 +95,19 @@ img.game-img { max-width: 150px; height: auto; display:block; margin-bottom: 10p
         </div>
     </div>
 
+    <!-- Filtro por período -->
+    <form method="get" class="mb-3">
+        <input type="hidden" name="id" value="<?= $gameId ?>">
+        <input type="text" name="daterange" id="daterange" class="form-control" placeholder="Selecione o período" />
+    </form>
+
+    <!-- Gráfico -->
+    <canvas id="bancaChart" height="100"></canvas>
+
     <?php if (count($hist) === 0): ?>
-        <div class="alert alert-info">Nenhum histórico encontrado para este jogo.</div>
+        <div class="alert alert-info mt-3">Nenhum histórico encontrado para este jogo.</div>
     <?php else: ?>
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered mt-3">
             <thead>
                 <tr>
                     <th>Data</th>
@@ -111,6 +134,38 @@ img.game-img { max-width: 150px; height: auto; display:block; margin-bottom: 10p
     <?php endif; ?>
 </div>
 
+<script>
+const ctx = document.getElementById('bancaChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?= json_encode($chartLabels) ?>,
+        datasets: [{
+            label: 'Banca Final',
+            data: <?= json_encode($chartData) ?>,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { x: { display: true }, y: { display: true } }
+    }
+});
+
+// Daterange
+$(function() {
+    $('#daterange').daterangepicker({
+        locale: { format: 'YYYY-MM-DD' },
+        opens: 'left'
+    }, function(start, end, label) {
+        window.location.href = '?id=<?= $gameId ?>&start=' + start.format('YYYY-MM-DD') + '&end=' + end.format('YYYY-MM-DD');
+    });
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </body>
 </html>
