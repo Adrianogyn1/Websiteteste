@@ -24,6 +24,14 @@ $Carteira = new Carteira();
 $Carteira->createTable();
 echo "<br/>table carteira ok";
 
+$GestaoHistorico = new GestaoHistorico();
+$GestaoHistorico->createTable();
+echo "<br/>table gestao histórico ok";
+
+$GestaoConfig = new GestaoConfig();
+$GestaoConfig->createTable();
+echo "<br/>table gestao ok";
+
 
 
 
