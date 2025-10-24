@@ -219,11 +219,15 @@ class Carteira
 
     // --- Métodos de cálculo ---
 
-    public function GetSaldo(\DateTime $fim): float
-    {
-        $sql = "SELECT COALESCE(SUM(valor), 0) AS saldo
+    public function GetSaldo(\DateTime $fim = null): float
+{
+    if ($fim === null) {
+        $fim = new \DateTime();
+    }
+
+    $sql = "SELECT COALESCE(SUM(valor), 0) AS saldo
             FROM `PaymanetHistorico`
-            WHERE carteira_id = :carteira_id
+            WHERE carteiraId = :carteira_id
               AND data <= :data_fim";
 
     $stmt = $this->db->prepare($sql);
@@ -233,32 +237,76 @@ class Carteira
     ]);
 
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    return (float)$result['saldo'];
-    }
+    $this->saldo = (float)$result['saldo'];
+    
+    // Atualiza o update_at com o saldo atual
+    $this->update_at = $this->saldo;
+
+    return $this->saldo;
+}
+
 
     public function GetLucro(\DateTime $inicio, \DateTime $fim): float
-    {
-        return array_sum(array_map(
-            fn($p) => ($p->type === TransasaoType::Aposta && $p->data >= $inicio && $p->data <= $fim) ? $p->valor : 0,
-            $this->pagamentos
-        ));
-    }
+{
+    $sql = "SELECT COALESCE(SUM(valor), 0) AS lucro
+            FROM `PaymanetHistorico`
+            WHERE carteiraId = :carteira_id
+              AND type = :type
+              AND data BETWEEN :data_inicio AND :data_fim";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        ':carteira_id' => $this->id,
+        ':type' => TransasaoType::Aposta, // ou 'Aposta' dependendo de como você define
+        ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
+        ':data_fim' => $fim->format('Y-m-d H:i:s')
+    ]);
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (float)$result['lucro'];
+}
+
 
     public function GetDepositos(\DateTime $inicio, \DateTime $fim): float
-    {
-        return array_sum(array_map(
-            fn($p) => ($p->type === TransasaoType::Deposito && $p->data >= $inicio && $p->data <= $fim) ? $p->valor : 0,
-            $this->pagamentos
-        ));
-    }
+{
+    $sql = "SELECT COALESCE(SUM(valor), 0) AS total
+            FROM `PaymanetHistorico`
+            WHERE carteiraId = :carteira_id
+              AND type = :type
+              AND data BETWEEN :data_inicio AND :data_fim";
 
-    public function GetRetiradas(\DateTime $inicio, \DateTime $fim): float
-    {
-        return array_sum(array_map(
-            fn($p) => ($p->type === TransasaoType::Retirada && $p->data >= $inicio && $p->data <= $fim) ? $p->valor : 0,
-            $this->pagamentos
-        ));
-    }
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        ':carteira_id' => $this->id,
+        ':type' => TransasaoType::Deposito,
+        ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
+        ':data_fim' => $fim->format('Y-m-d H:i:s')
+    ]);
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (float)$result['total'];
+}
+
+public function GetRetiradas(\DateTime $inicio, \DateTime $fim): float
+{
+    $sql = "SELECT COALESCE(SUM(valor), 0) AS total
+            FROM `PaymanetHistorico`
+            WHERE carteiraId = :carteira_id
+              AND type = :type
+              AND data BETWEEN :data_inicio AND :data_fim";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        ':carteira_id' => $this->id,
+        ':type' => TransasaoType::Retirada,
+        ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
+        ':data_fim' => $fim->format('Y-m-d H:i:s')
+    ]);
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (float)$result['total'];
+}
+
 
     public function GetBalance(\DateTime $inicio, \DateTime $fim): float
     {
