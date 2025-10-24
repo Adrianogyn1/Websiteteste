@@ -147,7 +147,7 @@ $('#formNovaCarteira').on('submit', function(e){
 
 // Editar carteira
 $('#carteirasList').on('click', '.btn-edit', function(){
-    const card = $(this).closest('[data-id]');
+   /* const card = $(this).closest('[data-id]');
     const id = card.data('id');
 
     $.getJSON(`/app/api/carteira/get.php?id=${id}`, function(resp){
@@ -159,6 +159,23 @@ $('#carteirasList').on('click', '.btn-edit', function(){
      //   $('#carteiraUrl').val(c.url);
        // $('#carteiraLogin').val(c.login);
         $('#novaCarteiraModal').modal('show');
+    });*/
+    
+    const card = $(this).closest('[data-id]');
+    const id = card.data('id');
+
+    $.ajax({
+        url: '/app/api/carteira/setCarteira.php',
+        method: 'GET',
+        contentType: 'application/html',
+        data: JSON.stringify({ id }),
+        success: function(resp)
+        {
+           // alert(resp.msg);
+          //  loadCarteiras();
+          $('html').append(resp);
+          $('#modalEdit').modal('show');
+        }
     });
 });
 
