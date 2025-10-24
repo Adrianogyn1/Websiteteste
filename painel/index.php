@@ -12,7 +12,7 @@
     
     
 <div class="row g-4">
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Depósitos</h6>
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Retirada</h6>
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Lucro/Prejuízos</h6>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Saldo</h6>
@@ -48,7 +48,7 @@
         </div>
     </div>
     
-     <div class="col-md-3">
+     <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Dias</h6>
@@ -57,7 +57,7 @@
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Avg dia</h6>
@@ -66,7 +66,7 @@
         </div>
     </div>
     
-   <div class="col-md-3">
+   <div class="col-6 col-md-3 mb-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6 class="text-muted">Tempo</h6>
