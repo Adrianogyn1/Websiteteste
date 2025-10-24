@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    try {
    $json = json_decode(file_get_contents('php://input'), true);
     $id = $json['id'] ?? '';
+    $db = new Database();
     $stmt = $db->query("SELECT * FROM users WHERE id = ?", [$id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -40,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    else
    {
       try {
-        $db = new DataBase();
+        $db = new Database();
 
         $stmt = $db->query("SELECT * FROM users WHERE id = ?", [$_SESSION['id']]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $db = new DataBase();
+        $db = new Database();
 
         $stmt = $db->query("SELECT * FROM users WHERE email = ?", [$email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
