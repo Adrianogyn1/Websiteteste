@@ -38,7 +38,7 @@ $userDb.save($user);
     } catch (Throwable $e) 
     {
         
-        $msg->msg=  'Erro ao cadastrar';
+        $msg->msg=  'Erro ao cadastrar '.$err->getMessage());
     }
 
 }
