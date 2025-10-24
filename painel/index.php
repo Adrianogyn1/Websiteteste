@@ -91,32 +91,51 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 let chart;
 
-async function atualizarDashboard() {
-    const carteiraId = document.getElementById('selectCarteira').value;
 
-    try {
-        const res = await fetch(`/api/dashboard.php?carteiraId=${carteiraId}`);
-        const json = await res.json();
-        if(!json.success) return console.error(json.msg);
+function atualizarDashboard(carteiraId = 0) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `/api/dashboard.php?carteiraId=${carteiraId}`, true);
 
-        const d = json.data;
+    xhr.onreadystatechange = function() {
+        if(xhr.readyState === 4) {
+            if(xhr.status === 200) {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if(!json.success) return console.error(json.msg);
 
-        document.querySelector('#card-deposito h3').textContent = d.deposito.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        document.querySelector('#card-retirada h3').textContent = d.retirada.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        document.querySelector('#card-lucro h3').textContent = d.lucro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        document.querySelector('#card-saldo h3').textContent = d.saldo.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        document.querySelector('#card-dias h3').textContent = d.dias;
-        document.querySelector('#card-avg h3').textContent = d.avg_dia.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    const d = json.data;
 
-        // Atualizar gráfico
-        chart.data.labels = d.chart_labels;
-        chart.data.datasets[0].data = d.chart_data;
-        chart.update();
+                    document.querySelector('#card-deposito h3').textContent =
+                        d.deposito.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    document.querySelector('#card-retirada h3').textContent =
+                        d.retirada.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    document.querySelector('#card-lucro h3').textContent =
+                        d.lucro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    document.querySelector('#card-saldo h3').textContent =
+                        d.saldo.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    document.querySelector('#card-dias h3').textContent = d.dias;
+                    document.querySelector('#card-avg h3').textContent =
+                        d.avg_dia.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 
-    } catch(err) {
-        console.error(err);
+                    // Atualizar gráfico
+                    chart.data.labels = d.chart_labels;
+                    chart.data.datasets[0].data = d.chart_data;
+                    chart.update();
+
+                } catch(e) {
+                    console.error('Erro ao processar JSON', e);
+                }
+            } else {
+                console.error('Erro na requisição Ajax', xhr.statusText);
+            }
+        }
     }
+
+    xhr.send();
 }
+
+
+
 
 // Inicializar Chart.js
 const ctx = document.getElementById('chartResumo');
