@@ -128,12 +128,18 @@ $('#formNovaCarteira').on('submit', function(e){
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ id, nome }),
-        success: function(resp){
-            alert(resp.msg);
+        success: function(resp)
+        {
+            
+            if(resp.sucess){
+                alert(resp.msg);
             $('#novaCarteiraModal').modal('hide');
             $('#formNovaCarteira')[0].reset();
             $('#carteiraId').val('');
             loadCarteiras();
+            }else{
+                alert(resp.msg);
+            }
         }
     });
 });

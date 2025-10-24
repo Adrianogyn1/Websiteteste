@@ -79,7 +79,7 @@ $carteira = new Carteira();
             ':uid' => $userId
         ]);*/
 
-        (new ApiMessage(true, 'Carteira atualizada com sucesso'))->toJson();
+        //(new ApiMessage(true, 'Carteira atualizada com sucesso'))->toJson();
     } 
     /*else {
         // Criar nova carteira
