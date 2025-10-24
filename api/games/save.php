@@ -16,6 +16,7 @@ $url = $input['url'] ?? '';
 $demo = $input['demo'] ?? '';
 $image = $input['image'] ?? '';
 
+
 try {
     $db = (new Database())->getPdo();
 
@@ -24,7 +25,7 @@ try {
         $stmt->execute(compact('nome', 'url', 'demo', 'image', 'id'));
         $msg = new ApiMessage(true, "Game atualizado com sucesso");
     } else {
-        $stmt = $db->prepare("INSERT INTO games (nome, url, demo, image) VALUES (:nome, :url, :demo, :image)");
+        $stmt = $db->prepare("INSERT INTO Game (nome, url, demo, image) VALUES (:nome, :url, :demo, :image)");
         $stmt->execute(compact('nome', 'url', 'demo', 'image'));
         $msg = new ApiMessage(true, "Game criado com sucesso", ['id' => $db->lastInsertId()]);
     }

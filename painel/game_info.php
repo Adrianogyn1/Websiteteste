@@ -1,3 +1,6 @@
+<?php include 'header.php'; ?>
+<?php include 'menu.php'; ?>
+
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -70,11 +73,7 @@ foreach ($rows as $r) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Histórico do Game: <?= htmlspecialchars($gameData['nome']) ?></title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
 <style>
 img.game-img { max-width: 150px; height: auto; display:block; margin-bottom: 10px; }
 .btn-group { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -163,7 +162,4 @@ $(function() {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-</body>
-</html>
+<?php include 'footer.php'; ?>
