@@ -6,7 +6,8 @@ $mysqlUser = 'if0_39810583';
 $mysqlPass = 'comsenha12';
 
 // Arquivo SQLite
-$sqliteFile = __DIR__ . '/meu_banco.sqlite3';
+$sqliteFile = __DIR__ . '/GestaoDatabase.db3';
+
 
 try {
     // Conexão SQLite
@@ -18,7 +19,14 @@ try {
     $mysql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Pegar todas as tabelas
-    $tables = $sqlite->query("SELECT name FROM sqlite_master WHERE type='table';")->fetchAll(PDO::FETCH_COLUMN);
+   // $tables = $sqlite->query("SELECT name FROM sqlite_master WHERE type='table';")->fetchAll(PDO::FETCH_COLUMN);
+// Pegar todas as tabelas, exceto internas
+$tables = $sqlite->query("
+    SELECT name 
+    FROM sqlite_master 
+    WHERE type='table' 
+    AND name NOT LIKE 'sqlite_%';
+")->fetchAll(PDO::FETCH_COLUMN);
 
     foreach ($tables as $table) {
         echo "Migrando tabela: $table\n";
