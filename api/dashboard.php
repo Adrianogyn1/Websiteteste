@@ -74,7 +74,7 @@ try {
         $c = $carteiras[0];
         $result = [
             'saldo' => 0,//$c->GetSaldo(),
-            'deposito' 0,//=> $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
+            'deposito' =>0,//=> $c->GetDepositos(new DateTime('1970-01-01'), new DateTime()),
             'retirada' => 0,//$c->GetRetiradas(new DateTime('1970-01-01'), new DateTime()),
             'lucro' => 0,//$c->GetBalance(new DateTime('1970-01-01'), new DateTime()),
             'dias' => 7,
