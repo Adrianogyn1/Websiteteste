@@ -96,7 +96,7 @@ $(function() {
     });
 
     // ======== MOCK DE DADOS ========
-    const historico = [
+    let historico = [
         { data: '20/10/2025', tipo: 'Entrada', desc: 'Depósito inicial', valor: 500 },
         {  data: '21/10/2025', tipo: 'SAÍDA', desc: 'Aposta em jogo 123', valor: -50 },
         {  data: '22/10/2025', tipo: 'Aposta', desc: 'Premiação', valor: 120 },
@@ -126,14 +126,15 @@ return;
         historico=[];
         data.forEach(hist => 
         {
-            console.log(hist);
-            historico.push({ data: '20/10/2025', tipo: 'Entrada', desc: 'Depósito inicial', valor: 500 });
+            //console.log(hist);
+            historico.push({ data: hist.dataCriacao, tipo: 'Entrada', desc: hist.gameNome, valor: hist.valor });
         });
         
        // renderPagination(totalPages);
+   carregarTabela();
     });
     
-    carregarTabela();
+    
 }
 
     function carregarTabela() {
@@ -171,8 +172,9 @@ return;
 
     // ======== BOTÃO RECARREGAR ========
     $('#btnRecarregar').click(() => {
-        carregarTabela();
-        alert('Histórico atualizado!');
+        loadHistorico();
+       // carregarTabela();
+      //  alert('Histórico atualizado!');
     });
 });
 </script>
