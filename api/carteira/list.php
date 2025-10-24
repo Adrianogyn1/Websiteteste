@@ -17,9 +17,14 @@ try {
 
     $params = [];
     $where = '';
+    $playerId =1;
     if ($search) {
-        $where = " WHERE nome LIKE :search";
+        $where = " WHERE nome LIKE :search AND PlayerId = :id";
         $params[':search'] = "%$search%";
+        $params[':id']=$playerId;
+    }else{
+        $where ='WHERE PlayerId = :id';
+        $params[':id']=$playerId;
     }
 
     // Total de registros
