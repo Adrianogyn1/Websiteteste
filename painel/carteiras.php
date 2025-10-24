@@ -181,6 +181,26 @@ $('#carteirasList').on('click', '.btn-delete', function(){
     });
 });
 
+
+// selecionar carteira
+$('#carteirasList').on('click', '.btn-select', function(){
+    //if(!confirm('Deseja realmente excluir esta carteira?')) return;
+
+    const card = $(this).closest('[data-id]');
+    const id = card.data('id');
+
+    $.ajax({
+        url: '/app/api/carteira/setCarteira.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ id }),
+        success: function(resp){
+            alert(resp.msg);
+            loadCarteiras();
+        }
+    });
+});
+
 // Inicial
 $(function(){ loadCarteiras(); });
 </script>

@@ -219,12 +219,13 @@ class Carteira
 
     // --- Métodos de cálculo ---
 
-    public function GetSaldo(\DateTime $fim = null): float
+public function GetSaldo(\DateTime $fim = null): float
 {
     if ($fim === null) {
         $fim = new \DateTime();
     }
 
+    // Soma dos valores
     $sql = "SELECT COALESCE(SUM(valor), 0) AS saldo
             FROM `PaymanetHistorico`
             WHERE carteiraId = :carteira_id
@@ -238,12 +239,23 @@ class Carteira
 
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $this->saldo = (float)$result['saldo'];
-    
-    // Atualiza o update_at com o saldo atual
-    $this->update_at = $this->saldo;
+
+    // Última atualização
+    $sqlUltimo = "SELECT data 
+                  FROM `PaymanetHistorico`
+                  WHERE carteiraId = :carteira_id
+                  ORDER BY data DESC
+                  LIMIT 1";
+
+    $stmtUltimo = $this->db->getPdo()->prepare($sqlUltimo);
+    $stmtUltimo->execute([':carteira_id' => $this->id]);
+    $ultimo = $stmtUltimo->fetch(PDO::FETCH_ASSOC);
+
+    $this->update_at = $ultimo ? $ultimo['data'] : $fim->format('Y-m-d H:i:s');
 
     return $this->saldo;
 }
+
 
 
     public function GetLucro(\DateTime $inicio, \DateTime $fim): float
