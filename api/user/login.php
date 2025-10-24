@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } catch (Throwable $err) {
-        $msg->msg = "Erro interno no servidor.";
+        $msg->msg = "Erro interno no servidor. ".$err->getMessage();
         // opcional: $msg->data = ['error' => $err->getMessage()];
     }
 }
