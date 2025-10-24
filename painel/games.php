@@ -1,6 +1,15 @@
 <?php include __DIR__.'/includes/header.php'; ?>
 <?php include __DIR__.'/includes/menu.php'; ?>
 
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once(dirname(__DIR__, 1) . '/autoload.php');
+
+?>
+
 
 <?php
 /*<!DOCTYPE html>
