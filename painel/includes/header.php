@@ -156,6 +156,10 @@ if (!isset($_SESSION['user'])) {
         <a href="carteiras.php">
             <span class="material-symbols-outlined">account_balance_wallet</span> Carteiras
         </a>
+        <a href="gestao.php">
+            <span class="material-symbols-outlined">monitoring</span> Gestão
+        </a>
+        
         <a href="configuracoes.php">
             <span class="material-symbols-outlined">settings</span> Configurações
         </a>

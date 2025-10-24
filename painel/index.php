@@ -15,7 +15,7 @@
     <div class="col-md-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Total de Jogos</h6>
+                <h6 class="text-muted">Depósitos</h6>
                 <h3>58</h3>
             </div>
         </div>
@@ -24,7 +24,7 @@
     <div class="col-md-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Usuários</h6>
+                <h6 class="text-muted">Retirada</h6>
                 <h3>127</h3>
             </div>
         </div>
@@ -33,7 +33,7 @@
     <div class="col-md-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Transações</h6>
+                <h6 class="text-muted">Lucro/Prejuízos</h6>
                 <h3>3.942</h3>
             </div>
         </div>
@@ -42,11 +42,49 @@
     <div class="col-md-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Lucro Total</h6>
+                <h6 class="text-muted">Saldo</h6>
                 <h3>R$ 8.540</h3>
             </div>
         </div>
     </div>
+    
+     <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Dias</h6>
+                <h3>28</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Avg dia</h6>
+                <h3>R$ 8.540</h3>
+            </div>
+        </div>
+    </div>
+    
+   <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Tempo</h6>
+                <h3>28:00</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Avg Hora</h6>
+                <h3>R$ 8.540</h3>
+            </div>
+        </div>
+    </div>
+    
+    
 </div>
 
 <hr class="my-4">
