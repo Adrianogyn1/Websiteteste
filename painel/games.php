@@ -37,6 +37,8 @@
 /*
 </head>
 <body>*/?>
+
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Games</h3>
@@ -84,8 +86,11 @@
     </div>
   </div>
 </div>
-
+<?php
+/*
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+*/?>
 <script>
 let currentPage = 1;
 const pageSize = 6;

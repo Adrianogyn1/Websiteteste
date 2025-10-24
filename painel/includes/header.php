@@ -58,6 +58,8 @@ if (session_status() === PHP_SESSION_NONE) {
     </style>
 </head>
 <body>
+    
+    
 <nav class="navbar fixed-top">
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1 text-light">🎮 Painel Administrativo</span>
