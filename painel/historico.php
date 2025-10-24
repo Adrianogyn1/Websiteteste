@@ -118,6 +118,9 @@ function loadHistorico(page = 1, search = '') {
         const data = resp.data.data;
         const totalPages = resp.data.totalPages;
       //  $('#gamesList').empty();
+        $('#saldoFinal').text(resp.data.saldo);
+        $('#totalSaidas').text(resp.data.saidas);
+        $('#totalEntradas').text(resp.data.entradas);
         
         if (data.length === 0) {
 alert('nada...')  ;
@@ -168,7 +171,7 @@ return;
         $('#saldoFinal').text('R$ ' + saldo.toFixed(2));
     }
 
-    carregarTabela();
+    loadHistorico();
 
     // ======== BOTÃO RECARREGAR ========
     $('#btnRecarregar').click(() => {

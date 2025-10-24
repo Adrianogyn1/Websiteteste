@@ -52,8 +52,16 @@ try {
     {
         $row['data'] = Helps::mysqlTicksToDateTime($row['data'] );
     }
+    $carteira = new Carteira();
+    $carteira.read($carteiraId);
+     $fim = new \DateTime();
+    $inicio = (clone $fim)->modify('-7 days');
+     
+    $saida =$carteira->GetRetiradas($inicio,$fim);
+    $saldo=$carteira->GetSaldo();
+    $entradas=$carteira->GetDepositos($inicio,$fim);
 
-    $msg = new ApiMessage(true, "Lista carregada", ['data' => $data, 'totalPages' => $totalPages]);
+    $msg = new ApiMessage(true, "Lista carregada", ['data' => $data,'saldo'=>$saldo,'entradas' =>$entradas, 'saidas'=>$saida, 'totalPages' => $totalPages]);
     $msg->toJson();
 } catch (Exception $e) {
     $msg = new ApiMessage(false, $e->getMessage());
