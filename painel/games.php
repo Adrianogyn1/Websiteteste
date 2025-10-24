@@ -153,12 +153,48 @@ function loadGames(page = 1, search = '') {
 function renderPagination(totalPages) {
     const ul = $('#pagination');
     ul.empty();
-    for (let i=1;i<=totalPages;i++){
-        ul.append(`<li class="page-item ${i===currentPage?'active':''}">
-            <a class="page-link" href="#" onclick="loadGames(${i}, $('#search').val())">${i}</a>
-        </li>`);
+
+    const delta = 10; // Quantas páginas antes/depois da atual
+    const current = currentPage;
+
+    const pages = [];
+
+    // Sempre mostrar a primeira página
+    if (current > delta + 2) {
+        pages.push(1);
+        pages.push('...');
+    } else {
+        for (let i = 1; i < Math.min(current - delta, 1); i++) pages.push(i);
     }
+
+    // Páginas ao redor da atual
+    const start = Math.max(1, current - delta);
+    const end = Math.min(totalPages, current + delta);
+
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+
+    // Sempre mostrar a última página
+    if (current + delta < totalPages - 1) {
+        pages.push('...');
+        pages.push(totalPages);
+    } else {
+        for (let i = end + 1; i <= totalPages; i++) pages.push(i);
+    }
+
+    // Renderizar
+    pages.forEach(p => {
+        if (p === '...') {
+            ul.append('<li class="page-item disabled"><span class="page-link">...</span></li>');
+        } else {
+            ul.append(`<li class="page-item ${p === current ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="loadGames(${p}, $('#search').val())">${p}</a>
+            </li>`);
+        }
+    });
 }
+
 
 $('#search').on('input', function() {
     loadGames(1, $(this).val());
