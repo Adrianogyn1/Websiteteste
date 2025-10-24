@@ -42,7 +42,7 @@ try {
     $totalPages = ceil($totalRows / $pageSize);
 
     // Buscar registros da página
-    $sql = "SELECT * FROM Carteira $where ORDER BY nome DESC LIMIT :limit OFFSET :offset";
+    $sql = "SELECT id FROM Carteira $where ORDER BY id DESC LIMIT :limit OFFSET :offset";
     $stmt = $db->prepare($sql);
 
     foreach ($params as $key => $value) {
@@ -54,13 +54,20 @@ try {
     $stmt->execute();
 
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$carteiras = [];
+foreach ($data as $row) {
+    $carteira = new Carteira();
+    $carteira->read($row['id']); // supondo que o método read carrega do banco
+    $carteiras[] = $carteira;
+}
 
-    $msg = new ApiMessage(true, "Lista carregada", [
-        'data' => $data,
-        'totalPages' => $totalPages,
-        'totalRows' => $totalRows,
-        'currentPage' => $page
-    ]);
+$msg = new ApiMessage(true, "Lista carregada", [
+    'data' => array_map(fn($c) => $c->toArray(), $carteiras), // converte objetos para array
+    'totalPages' => $totalPages,
+    'totalRows' => $totalRows,
+    'currentPage' => $page
+]);
+
     $msg->toJson();
 
 } catch (Exception $e) {

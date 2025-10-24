@@ -2,8 +2,7 @@
 
 class Carteira
 {
-    public static ?Carteira $Current = null;
-
+    
     public int $id = 0;
     public string $nome = "";
     public string $meta = "";
@@ -17,7 +16,7 @@ class Carteira
     public string $created_at ='';
     public string $update_at ='';
     
-    public float $saldo = "";
+    public float $saldo = 0;
 
     /** @var LinkGame[] */
     public array $gamesLink = [];
@@ -222,7 +221,19 @@ class Carteira
 
     public function GetSaldo(\DateTime $fim): float
     {
-        return array_sum(array_map(fn($p) => $p->valor, $this->pagamentos));
+        $sql = "SELECT COALESCE(SUM(valor), 0) AS saldo
+            FROM `PaymanetHistorico`
+            WHERE carteira_id = :carteira_id
+              AND data <= :data_fim";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        ':carteira_id' => $this->id,
+        ':data_fim' => $fim->format('Y-m-d H:i:s')
+    ]);
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (float)$result['saldo'];
     }
 
     public function GetLucro(\DateTime $inicio, \DateTime $fim): float
@@ -255,5 +266,38 @@ class Carteira
         $deposito = $this->GetDepositos($inicio, $fim);
         $retirada = $this->GetRetiradas($inicio, $fim);
         return (abs($retirada) - abs($deposito)) + $saldo;
+    }
+    
+    public function toArray(): array
+    {
+        $this->saldo = $this->GetSaldo();
+       // $this->update_at = "";
+        
+        return [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'meta' => $this->meta,
+            'useRelatorio' => $this->useRelatorio,
+            'PayerId' => $this->PayerId,
+            'url' => $this->url,
+            'login' => $this->login,
+            'senha' => $this->senha,
+            'teste' => $this->teste,
+            'selected' => $this->selected,
+            'created_at' => $this->created_at,
+            'update_at' => $this->update_at,
+            'saldo' => $this->saldo
+        ];
+    }
+    
+    public function toJson(bool $pretty = false): string
+    {
+        $options = JSON_UNESCAPED_UNICODE;
+        if ($pretty) {
+            $options |= JSON_PRETTY_PRINT;
+        }
+
+        // Converte o objeto atual em JSON
+        return json_encode($this->toArray(), $options);
     }
 }
