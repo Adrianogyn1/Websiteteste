@@ -19,16 +19,16 @@ if ($gameId <= 0) {
     die('Game inválido.');
 }
 
-$db = Database::getInstance()->getPdo();
+$db = (new Database())->getPdo();
 
 // Buscar info do game
-$stmt = $db->prepare("SELECT * FROM games WHERE id = :id");
+$stmt = $db->prepare("SELECT * FROM Game WHERE id = :id");
 $stmt->execute(['id' => $gameId]);
 $gameData = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$gameData) die('Game não encontrado.');
 
 // Buscar histórico de pagamentos
-$stmt = $db->prepare("SELECT * FROM payment WHERE gameId = :gameId ORDER BY data ASC");
+$stmt = $db->prepare("SELECT * FROM PaymanetHistorico WHERE gameId = :gameId ORDER BY data ASC");
 $stmt->execute(['gameId' => $gameId]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
