@@ -17,16 +17,17 @@ class LinkGame
     }
     
     public function createTable(): void
-    {
-        $this->db->getPdo()->exec("
-            CREATE TABLE IF NOT EXISTS link_games (
-                id INT PRIMARY KEY AUTOINCREMENT,
-                carteiraId INT NOT NULL,
-                gameId INT NOT NULL,
-                url VARCHAR(255) NOT NULL
-            )
-        ");
-    }
+{
+    $this->db->getPdo()->exec("
+        CREATE TABLE IF NOT EXISTS link_games (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            carteiraId INT NOT NULL,
+            gameId INT NOT NULL,
+            url VARCHAR(255) NOT NULL
+        )
+    ");
+}
+
     
     
 

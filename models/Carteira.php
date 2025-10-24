@@ -46,23 +46,24 @@ class Carteira
         $this->createTable();
     }
 
-    private function createTable(): void
-    {
-        $this->db->getPdo()->exec("
-            CREATE TABLE IF NOT EXISTS carteiras (
-                id INT PRIMARY KEY AUTOINCREMENT,
-                nome VARCHAR(255) NOT NULL,
-                meta VARCHAR(255),
-                useRelatorio INT DEFAULT 1,
-                PayerId INT,
-                url VARCHAR(255),
-                login VARCHAR(255),
-                senha VARCHAR(255),
-                teste INT DEFAULT 0,
-                selected INT DEFAULT 0
-            )
-        ");
-    }
+    public function createTable(): void
+{
+    $this->db->getPdo()->exec("
+        CREATE TABLE IF NOT EXISTS carteiras (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome VARCHAR(255) NOT NULL,
+            meta VARCHAR(255),
+            useRelatorio TINYINT(1) DEFAULT 1,
+            PayerId INT,
+            url VARCHAR(255),
+            login VARCHAR(255),
+            senha VARCHAR(255),
+            teste TINYINT(1) DEFAULT 0,
+            selected TINYINT(1) DEFAULT 0
+        )
+    ");
+}
+
 
     // --- CRUD ---
 

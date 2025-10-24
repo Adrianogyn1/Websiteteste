@@ -15,14 +15,15 @@ class ProvedorGame
     }
     
     public function createTable(): void
-    {
-        $this->db->getPdo()->exec("
-            CREATE TABLE IF NOT EXISTS provedores (
-                id INT PRIMARY KEY AUTOINCREMENT,
-                nome VARCHAR(255) NOT NULL
-            )
-        ");
-    }
+{
+    $this->db->getPdo()->exec("
+        CREATE TABLE IF NOT EXISTS provedores (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome VARCHAR(255) NOT NULL
+        )
+    ");
+}
+
 
     public function create(): bool
     {
