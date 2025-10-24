@@ -20,10 +20,10 @@ class LinkGame
     {
         $this->db->getPdo()->exec("
             CREATE TABLE IF NOT EXISTS link_games (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                carteiraId INTEGER NOT NULL,
-                gameId INTEGER NOT NULL,
-                url TEXT NOT NULL
+                id INT PRIMARY KEY AUTOINCREMENT,
+                carteiraId INT NOT NULL,
+                gameId INT NOT NULL,
+                url VARCHAR(255) NOT NULL
             )
         ");
     }

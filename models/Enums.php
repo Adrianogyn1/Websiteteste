@@ -1,6 +1,7 @@
 <?php
 
-enum TransasaoType: int {
+enum TransasaoType: int
+{
     case Deposito = 0;
     case Retirada = 1;
     case Bonus = 2;
@@ -9,7 +10,8 @@ enum TransasaoType: int {
     case CashBack = 5;
 }
 
-enum GameDificuldade: int {
+enum GameDificuldade: int
+{
     case Pessimo =0;
     case Ruim =1;
     case Normal = 2;
@@ -17,7 +19,8 @@ enum GameDificuldade: int {
     case Otimo = 4;
 }
 
-enum GameType: int {
+enum GameType: int 
+{
     case Slot = 0;
     case CassinoAoVivo = 1;
     case Roleta = 2;

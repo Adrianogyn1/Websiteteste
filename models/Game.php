@@ -48,15 +48,15 @@ class Game
     {
         $this->db->getPdo()->exec("
             CREATE TABLE IF NOT EXISTS games (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                lastId INTEGER DEFAULT 0,
-                nome TEXT NOT NULL,
-                provedor TEXT,
-                type INTEGER DEFAULT 0,
-                demo TEXT,
-                url TEXT,
-                image TEXT,
-                ultimaData TEXT
+                id INT PRIMARY KEY AUTOINCREMENT,
+                lastId INT DEFAULT 0,
+                nome VARCHAR(255) NOT NULL,
+                provedor VARCHAR(255),
+                type INT DEFAULT 0,
+                demo VARCHAR(255),
+                url VARCHAR(255),
+                image VARCHAR(255),
+                ultimaData VARCHAR(255)
             )
         ");
     }

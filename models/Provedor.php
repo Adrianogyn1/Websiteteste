@@ -18,8 +18,8 @@ class ProvedorGame
     {
         $this->db->getPdo()->exec("
             CREATE TABLE IF NOT EXISTS provedores (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nome TEXT NOT NULL
+                id INT PRIMARY KEY AUTOINCREMENT,
+                nome VARCHAR(255) NOT NULL
             )
         ");
     }
