@@ -165,7 +165,7 @@ $('#carteirasList').on('click', '.btn-edit', function(){
     const id = card.data('id');
 
     $.ajax({
-        url: '/app/api/carteira/setCarteira.php',
+        url: '/app/modals/editCarteira.php',
         method: 'GET',
         contentType: 'application/html',
         data: JSON.stringify({ id }),
