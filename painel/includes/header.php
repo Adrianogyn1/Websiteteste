@@ -62,6 +62,21 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1 text-light">🎮 Painel Administrativo</span>
         <div>
+                <a href="index.php" class="active">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+    </a>
+    <a href="games.php">
+        <span class="material-symbols-outlined">sports_esports</span> Jogos
+    </a>
+    <a href="historico.php">
+        <span class="material-symbols-outlined">history</span> Histórico
+    </a>
+    <a href="usuarios.php">
+        <span class="material-symbols-outlined">group</span> Usuários
+    </a>
+    <a href="configuracoes.php">
+        <span class="material-symbols-outlined">settings</span> Configurações
+    </a>
             <a href="#" class="btn btn-sm btn-outline-light">Perfil</a>
             <a href="logout.php" class="btn btn-sm btn-danger">Sair</a>
         </div>
