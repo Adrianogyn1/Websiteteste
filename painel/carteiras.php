@@ -1,6 +1,5 @@
 <?php include __DIR__.'/includes/header.php'; ?>
 
-
 <main class="container-fluid pt-5 mt-3">
     <div class="container py-4">
 
@@ -15,54 +14,49 @@
             </button>
         </div>
 
-        <!-- ===== TABELA DE CARTEIRAS ===== -->
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Nome</th>
-                                <th scope="col">Saldo</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col">Atualizado em</th>
-                                <th scope="col" class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaCarteiras">
-                            <tr>
-                                <td>1</td>
-                                <td>Carteira Principal</td>
-                                <td><span class="text-success fw-bold">R$ 2.350,00</span></td>
-                                <td><span class="badge bg-primary">Apostas</span></td>
-                                <td>23/10/2025 14:32</td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Carteira Secundária</td>
-                                <td><span class="text-success fw-bold">R$ 780,00</span></td>
-                                <td><span class="badge bg-success">Cassino</span></td>
-                                <td>20/10/2025 10:18</td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- ===== LISTA DE CARTEIRAS EM CARDS ===== -->
+        <div class="row g-3" id="carteirasList">
+            <!-- Card exemplo estático -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">Carteira Principal</h5>
+                            <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ 2.350,00</span></p>
+                            <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-primary">Apostas</span></p>
+                            <p class="card-text text-muted"><small>Atualizado em 23/10/2025 14:32</small></p>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Excluir">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outro card exemplo -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">Carteira Secundária</h5>
+                            <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ 780,00</span></p>
+                            <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-success">Cassino</span></p>
+                            <p class="card-text text-muted"><small>Atualizado em 20/10/2025 10:18</small></p>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Excluir">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,10 +82,10 @@
                                 <label for="tipoCarteira" class="form-label">Tipo</label>
                                 <select id="tipoCarteira" name="tipo" class="form-select" required>
                                     <option value="">Selecione...</option>
-                                    <option value="apostas">Apostas</option>
-                                    <option value="cassino">Cassino</option>
-                                    <option value="esportes">Esportes</option>
-                                    <option value="outros">Outros</option>
+                                    <option value="Apostas">Apostas</option>
+                                    <option value="Cassino">Cassino</option>
+                                    <option value="Esportes">Esportes</option>
+                                    <option value="Outros">Outros</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -112,7 +106,7 @@
 </main>
 
 <script>
-    // Exemplo de interação com o formulário
+    // Adicionar nova carteira como card
     $('#formNovaCarteira').on('submit', function (e) {
         e.preventDefault();
         const nome = $('#nomeCarteira').val();
@@ -120,23 +114,28 @@
         const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
 
         if (nome && tipo && saldo >= 0) {
-            const novaLinha = `
-                <tr>
-                    <td>-</td>
-                    <td>${nome}</td>
-                    <td><span class="text-success fw-bold">R$ ${saldo}</span></td>
-                    <td><span class="badge bg-info text-dark">${tipo}</span></td>
-                    <td>${new Date().toLocaleString()}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-secondary" title="Editar">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" title="Excluir">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>
-                    </td>
-                </tr>`;
-            $('#tabelaCarteiras').append(novaLinha);
+            const card = `
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">${nome}</h5>
+                                <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ ${saldo}</span></p>
+                                <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-info text-dark">${tipo}</span></p>
+                                <p class="card-text text-muted"><small>Atualizado em ${new Date().toLocaleString()}</small></p>
+                            </div>
+                            <div class="mt-3 d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('#carteirasList').append(card);
             $('#novaCarteiraModal').modal('hide');
             this.reset();
         }
@@ -144,8 +143,3 @@
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>
-
-
-
-
-

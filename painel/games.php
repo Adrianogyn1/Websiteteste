@@ -106,7 +106,7 @@ require_once(dirname(__DIR__, 1) . '/autoload.php');
 */?>
 <script>
 let currentPage = 1;
-const pageSize = 6;
+const pageSize = 20;
 
 function loadGames(page = 1, search = '') {
     currentPage = page;
@@ -154,7 +154,7 @@ function renderPagination(totalPages) {
     const ul = $('#pagination');
     ul.empty();
 
-    const delta = 10; // Quantas páginas antes/depois da atual
+    const delta = 3; // Quantas páginas antes/depois da atual
     const current = currentPage;
 
     const pages = [];
