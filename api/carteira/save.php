@@ -41,7 +41,7 @@ try {
 
     // Limite de 10 carteiras por usuário
     if ($id === 0) {
-        $stmtCount = $db->prepare("SELECT COUNT(*) as total FROM carteira WHERE PayerId = :uid");
+        $stmtCount = $db->prepare("SELECT COUNT(*) as total FROM Carteira WHERE PayerId = :uid");
         $stmtCount->execute([':uid' => $userId]);
         $total = (int)$stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
         if ($total >= 10) {

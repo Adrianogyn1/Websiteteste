@@ -100,6 +100,7 @@ class Carteira
     public function update(): bool
     {
         if ($this->id <= 0) return false;
+        
         $this->db->query("
             UPDATE Carteira SET 
                 nome = ?, 
