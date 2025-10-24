@@ -1,14 +1,7 @@
 <?php include __DIR__.'/includes/header.php'; ?>
 <?php include __DIR__.'/includes/menu.php'; ?>
 
-<?php
 
-if (!isset($_SESSION['user'])) {
-    header('Location: login.php');
-    exit;
-}
-
-?>
 
 
 

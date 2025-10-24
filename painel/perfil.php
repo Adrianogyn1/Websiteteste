@@ -1,4 +1,4 @@
-<?php include 'header.php'; ?>
+<?php include __DIR__.'/includes/header.php'; ?>
 
 <main class="container-fluid pt-5 mt-3">
     <div class="container py-4">
@@ -94,4 +94,8 @@
     });
 </script>
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__.'/includes/footer.php'; ?>
+
+
+
+
