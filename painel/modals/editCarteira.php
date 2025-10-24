@@ -33,21 +33,21 @@ session_start();
                     
                     <form id="formNovaCarteira" method="POST">
                         
-                        <input type="hidden" id="carteiraId" value="<?php $carteira->id; ?>">
+                        <input type="hidden" id="carteiraId" value="<?php echo $id; ?>">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="nomeCarteira" class="form-label">Nome da Carteira</label>
-                                <input type="text" value="<?php $carteira->nome; ?>" class="form-control" id="nomeCarteira" name="nome" required>
+                                <input type="text" value="<?php echo $carteira->nome; ?>" class="form-control" id="nomeCarteira" name="nome" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="carteiraUrl" class="form-label">Url</label>
-                                <input type="text" class="form-control" id="carteiraUrl" name="url" value="<?php $carteira->url; ?>">
+                                <input type="text" class="form-control" id="carteiraUrl" name="url" value="<?php echo $carteira->url; ?>">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="carteiraLogin" class="form-label">Login</label>
-                                <input type="text" class="form-control" id="carteiraLogin" name="login" value="<?php $carteira->login; ?>">
+                                <input type="text" class="form-control" id="carteiraLogin" name="login" value="<?php echo $carteira->login; ?>">
                             </div>
                             
                            <div class="mb-3">
