@@ -99,10 +99,11 @@ function loadCarteiras() {
                             <h5 class="card-title">${c.nome}</h5>
                             <p class="card-text mb-1"><strong>Saldo:</strong> <span class="text-success fw-bold">R$ ${parseFloat(c.saldo).toFixed(2)}</span></p>
                             <p class="card-text mb-1"><strong>Tipo:</strong> <span class="badge bg-info text-dark">${c.tipo}</span></p>
-                            <p class="card-text text-muted"><small>Atualizado em ${c.updated_at}</small></p>
+                            <p class="card-text text-muted"><small>Atualizado em ${c.update_at}</small></p>
                         </div>
                         <div class="mt-3 d-flex justify-content-between">
                             <button class="btn btn-sm btn-outline-secondary btn-edit" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+                                 <button class="btn btn-sm btn-outline-info btn-select" title="Editar"><span class="material-symbols-outlined">select</span></button>
                             <button class="btn btn-sm btn-outline-danger btn-delete" title="Excluir"><span class="material-symbols-outlined">delete</span></button>
                         </div>
                     </div>

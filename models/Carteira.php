@@ -230,7 +230,7 @@ class Carteira
             WHERE carteiraId = :carteira_id
               AND data <= :data_fim";
 
-    $stmt = $this->db->prepare($sql);
+    $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
         ':data_fim' => $fim->format('Y-m-d H:i:s')
@@ -254,7 +254,7 @@ class Carteira
               AND type = :type
               AND data BETWEEN :data_inicio AND :data_fim";
 
-    $stmt = $this->db->prepare($sql);
+    $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
         ':type' => TransasaoType::Aposta, // ou 'Aposta' dependendo de como você define
@@ -275,7 +275,7 @@ class Carteira
               AND type = :type
               AND data BETWEEN :data_inicio AND :data_fim";
 
-    $stmt = $this->db->prepare($sql);
+    $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
         ':type' => TransasaoType::Deposito,
@@ -295,7 +295,7 @@ public function GetRetiradas(\DateTime $inicio, \DateTime $fim): float
               AND type = :type
               AND data BETWEEN :data_inicio AND :data_fim";
 
-    $stmt = $this->db->prepare($sql);
+    $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
         ':type' => TransasaoType::Retirada,
