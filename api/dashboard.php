@@ -19,6 +19,7 @@ try {
     $dash = new Dashboard($db, $carteiraId);
     $dash->carregar(); // Carrega últimos 7 dias
     echo json_encode(['success' => true, 'msg' => 'Dashboard carregado', 'data' => json_decode($dash->toJson())]);
-} catch (Exception $e) {
+} catch (Exception $e) 
+{
     echo json_encode(['success' => false, 'msg' => $e->getMessage()]);
 }

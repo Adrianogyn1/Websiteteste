@@ -92,7 +92,8 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 let chart;
 
 
-function atualizarDashboard(carteiraId = 0) {
+function atualizarDashboard( ) {
+   let carteiraId =$('#selectCarteira').val();
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `/app/api/dashboard.php?carteiraId=${carteiraId}`, true);
 
@@ -162,6 +163,7 @@ setInterval(atualizarDashboard, 10000);
 
 // Atualizar ao trocar a carteira
 document.getElementById('selectCarteira').addEventListener('change', atualizarDashboard);
+
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>

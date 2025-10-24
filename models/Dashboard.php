@@ -32,7 +32,7 @@ class Dashboard
             ':fim'    => $fim->format('Y-m-d H:i:s')
         ];
 
-        if ($this->carteiraId) {
+        if ($this->carteiraId && $this->carteiraId >0) {
             $where .= " AND carteiraId = :carteiraId";
             $params[':carteiraId'] = $this->carteiraId;
         }
