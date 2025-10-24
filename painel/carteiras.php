@@ -10,7 +10,7 @@
                 <span class="material-symbols-outlined align-middle text-primary">account_balance_wallet</span>
                 Minhas Carteiras
             </h3>
-            <button class="btn btn-primary d-flex align-items-center" onclose="EditarCarteira(0)" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
+            <button class="btn btn-primary d-flex align-items-center" onclose="javascript:EditarCarteira(0)" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
                 <span class="material-symbols-outlined me-1">add</span> Nova Carteira
             </button>
         </div>
