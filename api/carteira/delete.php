@@ -8,6 +8,14 @@ error_reporting(E_ALL);
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 session_start();
 
+// Verifica login
+if (!isset($_SESSION['user'])) {
+    (new ApiMessage(false, 'Usuário não logado'))->toJson();
+}
+
+$userId = $_SESSION['user']['id'] ?? 0;
+
+
 
 $input = json_decode(file_get_contents('php://input'), true);
 $id = intval($input['id'] ?? 0);
