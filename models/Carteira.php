@@ -269,7 +269,7 @@ public function GetSaldo(\DateTime $fim = null): float
     $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
-        ':type' => TransasaoType::Aposta, // ou 'Aposta' dependendo de como você define
+        ':type' => TransasaoType::Aposta->value, // ou 'Aposta' dependendo de como você define
         ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
         ':data_fim' => $fim->format('Y-m-d H:i:s')
     ]);
@@ -290,7 +290,7 @@ public function GetSaldo(\DateTime $fim = null): float
     $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
-        ':type' => TransasaoType::Deposito,
+        ':type' => TransasaoType::Deposito->value,
         ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
         ':data_fim' => $fim->format('Y-m-d H:i:s')
     ]);
@@ -310,7 +310,7 @@ public function GetRetiradas(\DateTime $inicio, \DateTime $fim): float
     $stmt = $this->db->getPdo()->prepare($sql);
     $stmt->execute([
         ':carteira_id' => $this->id,
-        ':type' => TransasaoType::Retirada,
+        ':type' => TransasaoType::Retirada->value,
         ':data_inicio' => $inicio->format('Y-m-d H:i:s'),
         ':data_fim' => $fim->format('Y-m-d H:i:s')
     ]);
