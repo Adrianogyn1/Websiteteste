@@ -126,7 +126,7 @@ if (!isset($_SESSION['user'])) {
         <!-- Logo -->
         <a class="navbar-brand" href="#">
             <span class="material-symbols-outlined">stadia_controller</span>
-            Painel Administrativo
+            Painel
         </a>
 
         <!-- Botões da direita -->
