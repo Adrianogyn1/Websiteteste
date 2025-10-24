@@ -19,11 +19,11 @@ try {
     $where = '';
     $playerId =1;
     if ($search) {
-        $where = " WHERE nome LIKE :search AND PlayerId = :id";
+        $where = " WHERE nome LIKE :search AND PayerId = :id";
         $params[':search'] = "%$search%";
         $params[':id']=$playerId;
     }else{
-        $where ='WHERE PlayerId = :id';
+        $where ='WHERE PayerId = :id';
         $params[':id']=$playerId;
     }
 

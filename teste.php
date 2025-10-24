@@ -19,7 +19,7 @@ try {
     // Atualiza o PlayerId de cada uma
     foreach ($data as $row) 
     {
-        $sqlUp = "UPDATE Carteira SET PlayerId = :pid WHERE id = :id";
+        $sqlUp = "UPDATE Carteira SET PayerId = :pid WHERE id = :id";
         $stmtUp = $db->prepare($sqlUp);
         $stmtUp->execute([
             ':pid' => 1,
