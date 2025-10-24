@@ -194,7 +194,8 @@ $('#carteirasList').on('click', '.btn-select', function(){
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ id }),
-        success: function(resp){
+        success: function(resp)
+        {
             alert(resp.msg);
             loadCarteiras();
         }

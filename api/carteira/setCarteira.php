@@ -33,11 +33,11 @@ try {
     if ($id > 0) {
         
         $sql = "UPDATE Carteira SET selected = 0 WHERE PayerId = :id";
-$stmt = $db->getPdo()->prepare($sql);
+$stmt = $db->prepare($sql);
 $stmt->execute([':id' => $userId]);
 //atualizar essa
          $sql = "UPDATE Carteira SET selected = 1 WHERE id = :id";
-$stmt = $db->getPdo()->prepare($sql);
+$stmt = $db->prepare($sql);
 $stmt->execute([':id' => $id]);
 
     }
