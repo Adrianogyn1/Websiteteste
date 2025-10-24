@@ -38,20 +38,26 @@
                                 <label for="nomeCarteira" class="form-label">Nome da Carteira</label>
                                 <input type="text" class="form-control" id="nomeCarteira" name="nome" required>
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="tipoCarteira" class="form-label">Tipo</label>
-                                <select id="tipoCarteira" name="tipo" class="form-select" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="apostas">Apostas</option>
-                                    <option value="cassino">Cassino</option>
-                                    <option value="esportes">Esportes</option>
-                                    <option value="outros">Outros</option>
-                                </select>
+                                <label for="carteiraUrl" class="form-label">Url</label>
+                                <input type="text" class="form-control" id="carteiraUrl" name="url" >
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="saldoInicial" class="form-label">Saldo Inicial</label>
-                                <input type="number" class="form-control" id="saldoInicial" name="saldo" step="0.01" placeholder="0.00" required>
+                                <label for="carteiraLogin" class="form-label">Login</label>
+                                <input type="text" class="form-control" id="carteiraLogin" name="login" >
                             </div>
+                            
+                           <div class="mb-3">
+                                <label for="carteiraRelatorio" class="form-label">Login</label>
+                                <input type="checkbox" class="form-control" id="carteiraRelatorio" name="useRelatorio" >
+                            </div>
+                            
+                            
+
+                            
+                            
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -112,10 +118,10 @@ $('#formNovaCarteira').on('submit', function(e){
     e.preventDefault();
     const id = $('#carteiraId').val() || 0;
     const nome = $('#nomeCarteira').val();
-    const tipo = $('#tipoCarteira').val();
-    const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+   // const tipo = $('#tipoCarteira').val();
+   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
 
-    if(!nome || !tipo || saldo < 0) return;
+    if(!nome ) return;
 
     $.ajax({
         url: '/app/api/carteira/save.php',

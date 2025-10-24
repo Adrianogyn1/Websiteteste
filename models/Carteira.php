@@ -16,6 +16,8 @@ class Carteira
     public bool $selected = false;
     public string $created_at ='';
     public string $update_at ='';
+    
+    public float $saldo = "";
 
     /** @var LinkGame[] */
     public array $gamesLink = [];
@@ -37,7 +39,7 @@ class Carteira
         $this->gamesLink = [];
         $this->gestoes = [];
         $this->pagamentos = [];
-        $this->createTable();
+       // $this->createTable();
     }
 
     public function createTable(): void
@@ -61,12 +63,24 @@ class Carteira
 
     // --- CRUD ---
 
+    public function save(): bool
+    {
+        if($this->id>0)
+        {
+          return $this->update();
+        }
+        else 
+        {
+           return $this->create();
+        }
+    }
+    
     public function create(): bool
     {
         $this->db->query("
             INSERT INTO carteiras 
-            (nome, meta, useRelatorio, PayerId, url, login, senha, teste, selected)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (nome, meta, useRelatorio, PayerId, url, login, senha, teste, selected,created_at,update_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(),NOW())
         ", [
             $this->nome,
             $this->meta,
@@ -96,7 +110,9 @@ class Carteira
                 login = ?, 
                 senha = ?, 
                 teste = ?, 
-                selected = ?
+                selected = ?,
+                update_at=NOW(),
+                
             WHERE id = ?
         ", [
             $this->nome,
