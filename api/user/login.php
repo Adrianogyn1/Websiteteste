@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(__DIR__, 3) . '/autoload.php');
+require_once(dirname(__DIR__, 2) . '/autoload.php');
 session_start();
 
 $msg = new ApiMessage(); // inicializa padrão: sucess=false, msg='', data=null
