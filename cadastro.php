@@ -1,34 +1,3 @@
-<?php
-require_once __DIR__ . '/htdocs/app/models/UserPdo.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-   
-   try {
-    $json = json_decode(file_get_contents('php://input'), true);
-    $nome = $json['nome'] ?? '';
-    $email = $json['email'] ?? '';
-    $senha = $json['senha'] ?? '';
-
-    if (!$nome || !$email || !$senha) {
-        http_response_code(400);
-        echo json_encode(['erro' => 'Preencha todos os campos']);
-        exit;
-    }
-
-    $user = new User($nome, $email, $senha);
-    $db = new UserPdo();
-
-    
-        $db->save($user);
-        echo json_encode(['ok' => true]);
-    } catch (PDOException $e) {
-        http_response_code(400);
-        echo json_encode(['erro' => 'Erro ao cadastrar']);
-    }
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -56,8 +25,8 @@ body {
 }
 .progress {
     height: 6px;
-    margin-top: 8px;
     display: none;
+    margin-top: 8px;
 }
 </style>
 </head>
@@ -66,20 +35,14 @@ body {
 <div class="card p-4">
     <h4 class="text-center mb-3">Criar Conta</h4>
 
-    <div class="mb-3">
-        <input type="text" id="nome" class="form-control" placeholder="Nome">
-    </div>
-    <div class="mb-3">
-        <input type="email" id="email" class="form-control" placeholder="Email">
-    </div>
-    <div class="mb-3">
-        <input type="password" id="senha" class="form-control" placeholder="Senha">
-    </div>
+    <input type="text" id="nome" class="form-control mb-2" placeholder="Nome">
+    <input type="email" id="email" class="form-control mb-2" placeholder="Email">
+    <input type="password" id="senha" class="form-control mb-2" placeholder="Senha">
 
     <button id="btnCadastrar" class="btn btn-primary w-100">Cadastrar</button>
 
     <div class="progress mt-3">
-        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%;"></div>
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
     </div>
 
     <div id="msg" class="text-center mt-3"></div>
@@ -97,41 +60,36 @@ $(function() {
         const senha = $('#senha').val().trim();
         const msg = $('#msg');
         const progress = $('.progress');
-        const bar = $('#progressBar');
+        const bar = $('.progress-bar');
 
-        msg.text('');
+        msg.text('').removeClass('text-success text-danger');
+
         if (!nome || !email || !senha) {
             msg.text('Preencha todos os campos').addClass('text-danger');
             return;
         }
 
+        // mostra progress
         progress.show();
-        bar.css('width', '0%');
-
-        // Simula carregamento
-        let p = 0;
-        const timer = setInterval(() => {
-            p += 10;
-            bar.css('width', p + '%');
-            if (p >= 90) clearInterval(timer);
-        }, 100);
+        bar.css('width', '50%');
 
         $.ajax({
-            url: 'cadastro.php',
+            url: '/app/api/user/cadastro.php',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ nome, email, senha }),
             success: function(resp) {
-                clearInterval(timer);
                 bar.css('width', '100%');
-                msg.removeClass('text-danger').addClass('text-success').text('Cadastro realizado com sucesso!');
-                setTimeout(() => window.location.href = 'login.php', 800);
+                if (resp.sucess) {
+                    msg.removeClass('text-danger').addClass('text-success').text(resp.msg);
+                    setTimeout(() => window.location.href = 'login.php', 800);
+                } else {
+                    msg.removeClass('text-success').addClass('text-danger').text(resp.msg || 'Erro ao cadastrar');
+                }
             },
-            error: function(xhr) {
-                clearInterval(timer);
+            error: function() {
                 bar.css('width', '100%').removeClass('bg-success').addClass('bg-danger');
-                const erro = xhr.responseJSON?.erro || 'Erro ao cadastrar';
-                msg.removeClass('text-success').addClass('text-danger').text(erro);
+                msg.removeClass('text-success').addClass('text-danger').text('Erro ao conectar com o servidor!');
             },
             complete: function() {
                 setTimeout(() => progress.fadeOut(500), 1000);

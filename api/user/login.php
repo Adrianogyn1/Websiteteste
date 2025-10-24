@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $db = new Database();
+        $db = new DataBase();
 
         $stmt = $db->query("SELECT * FROM users WHERE email = ?", [$email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -30,9 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (password_verify($senha, $user->senha)) {
             $_SESSION['user'] = $user->email;
+            $_SESSION['id'] = $user->id;
+            
+            
             $msg->sucess = true;
             $msg->msg = "Logado com sucesso.";
-            $msg->data = ['user' => $user->email]; // opcional: retorna dados do usuário
+            $msg->data = $user; // opcional: retorna dados do usuário
         } else {
             $msg->msg = "Usuário ou senha inválidos.";
         }
