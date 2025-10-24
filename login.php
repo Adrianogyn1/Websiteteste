@@ -54,14 +54,13 @@ $(document).ready(function() {
         const senha = $("#senha").val().trim();
         const msg = $("#msg");
 
-        msg.removeClass().text(""); // limpa mensagens
+        msg.removeClass().text("");
 
         if (!email || !senha) {
             msg.addClass("text-danger").text("Preencha todos os campos!");
             return;
         }
 
-        // Mostra carregando
         msg.addClass("text-secondary").text("Verificando...");
 
         $.ajax({
@@ -69,14 +68,13 @@ $(document).ready(function() {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({ email, senha }),
-            success: function(data)
-            {
-                if (data.ok) 
-                {
-                    msg.removeClass().addClass("text-success").text("Entrando...");
+            success: function(data) {
+                // Ajustado para ApiMessage
+                if (data.sucess) {
+                    msg.removeClass().addClass("text-success").text(data.msg || "Entrando...");
                     setTimeout(() => window.location.href = "/app/painel", 500);
                 } else {
-                    msg.removeClass().addClass("text-danger").text(data.erro || "Usuário ou senha inválidos!");
+                    msg.removeClass().addClass("text-danger").text(data.msg || "Usuário ou senha inválidos!");
                 }
             },
             error: function() {

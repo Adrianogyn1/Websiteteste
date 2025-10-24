@@ -2,12 +2,7 @@
 require_once(dirname(__DIR__, 3) . '/autoload.php');
 session_start();
 
-header('Content-Type: application/json; charset=utf-8');
-
-// Instância inicial da resposta
-$msg = new ApiResposta();
-$msg->sucess = false;
-$msg->msg = "Credenciais inválidas.";
+$msg = new ApiMessage(); // inicializa padrão: sucess=false, msg='', data=null
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -17,8 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($email) || empty($senha)) {
         $msg->msg = "Preencha todos os campos.";
-        echo json_encode($msg);
-        exit;
+        $msg->toJson();
     }
 
     try {
@@ -29,8 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$data) {
             $msg->msg = "Usuário não encontrado.";
-            echo $msg;
-            exit;
+            $msg->toJson();
         }
 
         $user = User::createFromArray($data);
@@ -39,14 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user'] = $user->email;
             $msg->sucess = true;
             $msg->msg = "Logado com sucesso.";
+            $msg->data = ['user' => $user->email]; // opcional: retorna dados do usuário
         } else {
             $msg->msg = "Usuário ou senha inválidos.";
         }
 
     } catch (Throwable $err) {
         $msg->msg = "Erro interno no servidor.";
-        $msg->erro = $err->getMessage(); // opcional, para debug interno
+        // opcional: $msg->data = ['error' => $err->getMessage()];
     }
 }
 
-echo $msg;
+// envia a resposta JSON e encerra
+$msg->toJson();
