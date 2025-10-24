@@ -26,8 +26,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-success" style="font-size: 36px;">arrow_downward</span>
-                        <h6 class="text-muted">Entradas</h6>
-                        <h4 class="fw-bold text-success" id="totalEntradas">R$ 0,00</h4>
+                        <h4 class="text-muted">Entradas</h6>
+                        <h2 class="fw-bold text-success" id="totalEntradas">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -36,8 +36,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-danger" style="font-size: 36px;">arrow_upward</span>
-                        <h6 class="text-muted">Saídas</h6>
-                        <h4 class="fw-bold text-danger" id="totalSaidas">R$ 0,00</h4>
+                        <h4 class="text-muted">Saídas</h6>
+                        <h2 class="fw-bold text-danger" id="totalSaidas">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -46,8 +46,8 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <span class="material-symbols-outlined text-primary" style="font-size: 36px;">account_balance_wallet</span>
-                        <h6 class="text-muted">Saldo Final</h6>
-                        <h4 class="fw-bold text-primary" id="saldoFinal">R$ 0,00</h4>
+                        <h4 class="text-muted">Saldo Final</h6>
+                        <h2 class="fw-bold text-primary" id="saldoFinal">R$ 0,00</h4>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                 <table class="table table-hover mb-0 align-middle" id="tabelaHistorico">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
+                           
                             <th>Data</th>
                             <th>Tipo</th>
                             <th>Descrição</th>
@@ -97,10 +97,10 @@ $(function() {
 
     // ======== MOCK DE DADOS ========
     const historico = [
-        { id: 1, data: '20/10/2025', tipo: 'Entrada', desc: 'Depósito inicial', valor: 500 },
-        { id: 2, data: '21/10/2025', tipo: 'Saída', desc: 'Aposta em jogo 123', valor: -50 },
-        { id: 3, data: '22/10/2025', tipo: 'Entrada', desc: 'Premiação', valor: 120 },
-        { id: 4, data: '23/10/2025', tipo: 'Saída', desc: 'Retirada', valor: -100 },
+        { data: '20/10/2025', tipo: 'Entrada', desc: 'Depósito inicial', valor: 500 },
+        {  data: '21/10/2025', tipo: 'SAÍDA', desc: 'Aposta em jogo 123', valor: -50 },
+        {  data: '22/10/2025', tipo: 'Aposta', desc: 'Premiação', valor: 120 },
+        {  data: '23/10/2025', tipo: 'Aposta', desc: 'Retirada', valor: -100 },
     ];
 
     function carregarTabela() {
