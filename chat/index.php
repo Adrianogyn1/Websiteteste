@@ -36,7 +36,7 @@
     <button id="send" class="btn-info">Enviar</button>
 
     <script>
-        const ws = new WebSocket('ws://35.209.27.45:8888');
+        const ws = new WebSocket('ws://35.209.27.45:3000');
         ws.onmessage = e => {
             $('#messages').append('<div>' + e.data + '</div>');
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
