@@ -9,7 +9,7 @@ if(isset($_post["desligar"])){
 
 // Exemplo para Linux
 $output = shell_exec("pkill -f 'server.js' 2>&1");
-echo $output ?: "Servidor desligado!";
+echo $output ?: "Servidor desligado! 😅";
 
 }
 
