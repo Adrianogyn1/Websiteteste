@@ -59,14 +59,28 @@ session_start();
                             
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="Close()" <?php /*data-bs-dismiss="modal"*/?> >Cancelar</button>
-                            <button type="submit" class="btn btn-primary" onclick="Salvar()">Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="Close()" data-bs-dismiss="modal" >Cancelar</button>
+                            <button type="submit" class="btn btn-primary" onclick="Salvar()" id="btn-salvar">Salvar</button>
                         </div>
                     </form>
                 </div>
             </div>
             
             <script>
+            $("#modalEdit").load("conteudo-modal.html", function () {
+    
+                // Botão dentro do conteúdo carregado
+                $("#btn-salvar").on("click", function (e) {
+                    e.preventDefault();
+                    Salvar();
+                });
+            
+                // Evento do Bootstrap continua igual
+                $("#modalEdit").on("hidden.bs.modal", function (e) {
+                    Close();
+                });
+            });
+
             
                 function Salvar()
                 {
