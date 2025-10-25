@@ -1,3 +1,25 @@
+<?php
+if(isset($_post["ligar"])){
+    $script = __DIR__ . '/server.js';
+    $output = shell_exec('node '.$script);
+echo "<pre>$output</pre>";
+}
+
+if(isset($_post["desligar"])){
+
+// Exemplo para Linux
+$output = shell_exec("pkill -f 'server.js' 2>&1");
+echo $output ?: "Servidor desligado!";
+
+}
+
+
+
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -32,6 +54,11 @@
     </style>
 </head>
 <body>
+    <div>
+            <button id="ligar" class="btn-info">ligar</button>
+             <button id="desligar" class="btn-info">desligar</button>
+            
+    </div>
     <h2>Chat Teste</h2>
     <div id="messages"></div>
     <input id="input" placeholder="Digite sua mensagem" />
@@ -50,6 +77,14 @@
             if(msg) ws.send(msg);
             $('#input').val('');
         });
+        
+        $("ligar").click(function(){
+            $.post('/')?????
+        })
+        
+            $("desliga").click(function(){
+            $.post('/')?????
+        })
     </script>
     
     <script>eruda.init();</script>
