@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 $usuario = "Adrianogyn1";
 $repositorio = "Websiteteste";
-$branch = "main";
+$branch = "Main";
 
 $tmpDir = __DIR__ . "/tmp_update";
 $destDir = __DIR__ . "/app";
