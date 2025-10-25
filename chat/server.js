@@ -1,10 +1,11 @@
 const WebSocket = require('ws');
 const http = require('http');
-
+const port =3000;
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', ws => {
+wss.on('connection', ws => 
+{
     console.log('Cliente conectado!');
     
          wss.clients.forEach(client => {
@@ -24,6 +25,6 @@ wss.on('connection', ws => {
     });
 });
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log('Servidor de chat rodando na porta 3000');
+server.listen(port, '0.0.0.0', () => {
+    console.log('Servidor de chat rodando na porta $`port`');
 });

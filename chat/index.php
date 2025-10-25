@@ -24,6 +24,8 @@
     <!-- Eruda -->
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
+
     <style>
         #messages { border: 1px solid #ccc; height: 200px; overflow-y: scroll; padding: 5px; }
         #input { width: 80%; }
@@ -37,7 +39,8 @@
 
     <script>
         const ws = new WebSocket('ws://35.209.27.45:3000');
-        ws.onmessage = e => {
+        ws.onmessage = e => 
+        {
             $('#messages').append('<div>' + e.data + '</div>');
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
         };
