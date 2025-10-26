@@ -98,4 +98,4 @@
 <div id="dynamic-modal-container"></div>
 
 
-<script src="./app/painel/assets/js/modal_apostas.js"></script>
+<script src="./assets/js/modal_apostas.js"></script>
