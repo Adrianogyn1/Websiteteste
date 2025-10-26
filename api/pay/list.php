@@ -6,8 +6,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
 
+if (!isset($_SESSION['user'])) {
+    (new ApiMessage(false, 'Usuário não logado'))->toJson();
+}
+
+$userId = $_SESSION['id'] ?? 0;
 
 $page = intval($_GET['page'] ?? 1);
 $pageSize = intval($_GET['pageSize'] ?? 25);
@@ -31,6 +35,9 @@ try {
         $sql .= " where carteiraId = :carteira";
         $params[':carteira'] = $carteiraId;
     }
+    
+    $sql .= " where playerId = :userId";
+    $params[':userId'] = $userId;
 
     // Total de registros
     $stmtTotal = $db->prepare($sql);
