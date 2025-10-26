@@ -191,4 +191,58 @@ function EditarCarteira(id){
 $(function(){ loadCarteiras(); });
 </script>
 
+
+     <script>
+            
+                // Botão dentro do conteúdo carregado
+                $('body').on('click','#btn-salvar',function (e) {
+                    e.preventDefault();
+                    Salvar();
+                });
+            
+                // Evento do Bootstrap continua igual
+                $("html").on("hidden.bs.modal", function (e) {
+                    Close();
+                });
+                
+
+       
+
+            
+                function Salvar()
+                {
+                    
+                    const id = $('#carteiraId').val() || 0;
+                    const nome = $('#nomeCarteira').val();
+                   // const tipo = $('#tipoCarteira').val();
+                   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+                
+                    if(!nome ) return;
+                
+                    $.ajax({
+                        url: '/app/api/carteira/save.php',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ id, nome }),
+                        success: function(resp)
+                        {
+                            
+                            if(resp.sucess){
+                                alert(resp.msg);
+                            
+                            }else{
+                                alert(resp.msg);
+                            }
+                        }
+                    });
+
+                }
+                
+                function Close()
+                {
+                    $('html').remove('#modalEdit');
+                }
+      
+            </script>
+
 <?php include __DIR__.'/includes/footer.php'; ?>
