@@ -111,7 +111,7 @@ class Carteira
                 senha = ?, 
                 teste = ?, 
                 selected = ?,
-                update_at=NOW(),
+                update_at=NOW()
                 
             WHERE id = ?
         ", [
@@ -124,7 +124,7 @@ class Carteira
             $this->senha,
             $this->teste ? 1 : 0,
             $this->selected ? 1 : 0,
-           "'". $this->id."'"
+           $this->id
         ]);
 
         return true;
