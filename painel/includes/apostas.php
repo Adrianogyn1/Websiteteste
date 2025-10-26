@@ -44,58 +44,94 @@
         <h3 class="text-center mb-4">Menu de Ações</h3>
 
         <a href="#" 
-           class="btn btn-primary" 
+           class="btn btn-primary load-modal-btn" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Aposta em Cassino" 
-           data-bs-target="#modalCassino">
+           title="Editar Aposta Cassino" 
+           data-bs-target="#modalCassino"
+           data-modal-url="modal_cassino.php">
             <span class="material-symbols-outlined">casino</span> 
         </a>
 
         <a href="#" 
-           class="btn btn-success" 
+           class="btn btn-success load-modal-btn" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Aposta em Esportes" 
-           data-bs-target="#modalEsportes">
+           title="Editar Aposta Esportes" 
+           data-bs-target="#modalEsportes"
+           data-modal-url="modal_esportes.php">
             <span class="material-symbols-outlined">sports_soccer</span> 
         </a>
 
         <a href="#" 
-           class="btn btn-warning text-dark" 
+           class="btn btn-warning text-dark load-modal-btn" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Gerar Desafio de Cassino" 
-           data-bs-target="#modalDesafio">
+           title="Editar Desafio" 
+           data-bs-target="#modalDesafio"
+           data-modal-url="modal_desafio.php">
             <span class="material-symbols-outlined">star</span> 
         </a>
 
         <a href="#" 
-           class="btn btn-info text-dark" 
+           class="btn btn-info text-dark load-modal-btn" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Depósito" 
-           data-bs-target="#modalDeposito">
+           title="Editar Depósito" 
+           data-bs-target="#modalDeposito"
+           data-modal-url="modal_deposito.html">
             <span class="material-symbols-outlined">account_balance</span> 
         </a>
 
         <a href="#" 
-           class="btn btn-danger" 
+           class="btn btn-danger load-modal-btn" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Retirada" 
-           data-bs-target="#modalRetirada">
+           title="Editar Retirada" 
+           data-bs-target="#modalRetirada"
+           data-modal-url="modal_retirada.html">
             <span class="material-symbols-outlined">payments</span> 
         </a>
     </div>
 </div>
 
+<div id="dynamic-modal-container"></div>
+
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Inicialização do Tooltip
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl) 
-        })
+    $(document).ready(function () {
+        const $modalContainer = $('#dynamic-modal-container');
+        const $loadModalButtons = $('.load-modal-btn');
+        
+        // 1. Inicialização do Tooltip
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        // 2. Lógica para carregar o Modal dinamicamente
+        $loadModalButtons.on('click', function (event) {
+            event.preventDefault(); 
+
+            const $button = $(this);
+            const modalId = $button.data('bs-target'); 
+            const modalUrl = "/app/painel/modal/"+$button.data('modal-url'); 
+
+            // Limpa o conteúdo anterior
+            $modalContainer.empty(); 
+            
+            // Requisita o arquivo HTML do modal
+            $.get(modalUrl)
+                .done(function (htmlContent) {
+                    // Injeta o HTML no container
+                    $modalContainer.html(htmlContent);
+                    
+                    // Inicializa e mostra o modal do Bootstrap
+                    const $newModalElement = $(modalId); 
+                    const modalInstance = new bootstrap.Modal($newModalElement[0]); 
+                    modalInstance.show();
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(`Falha ao carregar o modal: ${textStatus}`, errorThrown);
+                    alert(`Erro ao carregar a função. Verifique se o arquivo "${modalUrl}" existe.`);
+                });
+        });
     });
 </script>
