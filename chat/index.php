@@ -140,8 +140,12 @@ if(isset($_POST["status"])){
     </div>
 
     <script>
+    
+    let ws = new WebSocket('ws://35.209.27.45:3000'); 
+        
+    function startSocket(){
         // Use a porta correta: 3000
-        const ws = new WebSocket('ws://35.209.27.45:3000'); 
+         ws = new WebSocket('ws://35.209.27.45:3000'); 
         
         // --- FUNÇÕES DE CHAT ---
         ws.onmessage = e => 
@@ -150,18 +154,17 @@ if(isset($_POST["status"])){
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
         };
 
-        $('#send').click(() => {
+        
+        
+    }
+    
+    $('#send').click(() => {
             const msg = $('#input').val();
             if(msg) ws.send(msg);
             $('#input').val('');
         });
 
-        $('#input').keypress(function(e) {
-            if (e.which == 13) {
-                $('#send').click();
-                return false;
-            }
-        });
+        
         
         // --- FUNÇÕES DE STATUS E UI ---
         
@@ -204,6 +207,7 @@ if(isset($_POST["status"])){
         $("#ligar").click(function(){
             addStatus('Iniciando o servidor...', 'info');
             $.post('', {ligar: true}, function(data){
+              startSocket();
                 // Após ligar, verifica o status para atualizar os botões
                 checkServerStatus(); 
             }).fail(function() {
@@ -229,6 +233,7 @@ if(isset($_POST["status"])){
         $(document).ready(function() {
             // 1. Executa a primeira verificação imediatamente ao carregar
             checkServerStatus(); 
+            startSocket();
             
             // 2. Define o loop de verificação automática a cada 5 segundos (5000ms)
             setInterval(checkServerStatus, 5000); 
