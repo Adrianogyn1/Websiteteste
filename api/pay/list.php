@@ -7,6 +7,8 @@ error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 
+session_start();
+
 if (!isset($_SESSION['id'])) 
 {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
@@ -15,8 +17,8 @@ if (!isset($_SESSION['id']))
 $userId = $_SESSION['id'] ?? 0;
 
 $page = intval($_GET['page'] ?? 1);
-$pageSize = intval($_GET['pageSize'] ?? 25);
 
+$pageSize = intval($_GET['pageSize'] ?? 25);
 
 $carteiraId =intval($_GET['id'] ?? 0);;
 
