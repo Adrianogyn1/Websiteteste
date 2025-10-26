@@ -15,8 +15,9 @@ $userId = $_SESSION['id'] ?? 0;
 
 $page = intval($_GET['page'] ?? 1);
 $pageSize = intval($_GET['pageSize'] ?? 25);
-$search = $_GET['search'] ?? '';
-$carteiraId =intval($_GET['id'] ?? 2);;
+
+
+$carteiraId =intval($_GET['id'] ?? 0);;
 
 $offset = ($page - 1) * $pageSize;
 
@@ -25,13 +26,10 @@ try {
 
     $params = [];
     $sql = "SELECT * FROM PaymanetHistorico";
-    if ($search) {
-        $sql .= " WHERE game LIKE :search";
-        $params[':search'] = "%$search%";
-        $sql .= " AND carteiraId = :carteira";
-        $params[':carteira'] = $carteiraId;
-    }
-    else{
+    
+    
+    if($carteiraId>0)
+    {
         $sql .= " where carteiraId = :carteira";
         $params[':carteira'] = $carteiraId;
     }
@@ -57,11 +55,12 @@ try {
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($data as $row)
     {
-        $row['data'] = Helps::mysqlTicksToDateTime($row['data'] );
+        //$row['data'] = Helps::mysqlTicksToDateTime($row['data'] );
     }
+    
     $carteira = new Carteira();
    $carteira= $carteira->read($carteiraId);
-     $fim = new \DateTime();
+    $fim = new \DateTime();
     $inicio = (clone $fim)->modify('-7 days');
      
     $saida =$carteira->GetRetiradas($inicio,$fim);
