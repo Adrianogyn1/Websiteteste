@@ -159,6 +159,9 @@ if (!isset($_SESSION['user'])) {
         <a href="gestao.php">
             <span class="material-symbols-outlined">monitoring</span> Gestão
         </a>
+         <a href="../chat/index.php">
+            <span class="material-symbols-outlined">settings</span> chat
+        </a>
         
         <a href="configuracoes.php">
             <span class="material-symbols-outlined">settings</span> Configurações
