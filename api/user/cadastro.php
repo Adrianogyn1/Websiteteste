@@ -27,11 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     
-
-$userDb = new UserPdo();
-$user = new User();
-$user.create($nome,$email,$senha);
-$userDb.save($user);
+    
+    $user = new User();
+    $user.create($nome,$email,$senha);
+    $user.save();
     
         
        
