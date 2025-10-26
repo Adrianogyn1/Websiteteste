@@ -4,6 +4,7 @@ class Dashboard
 {
     private PDO $db;
     private ?int $carteiraId;
+    private ?int $userId;
 
     public float $saldo = 0;
     public float $deposito = 0;
@@ -15,9 +16,10 @@ class Dashboard
     public array $chart_labels = [];
     public array $chart_data = [];
 
-    public function __construct(PDO $db, ?int $carteiraId = null)
+    public function __construct(PDO $db, $userId, ?int $carteiraId = null)
     {
         $this->db = $db;
+        $this->userId= $userId;
         $this->carteiraId = $carteiraId;
     }
 
@@ -26,7 +28,7 @@ class Dashboard
         if (!$fim) $fim = new \DateTime();
         if (!$inicio) $inicio = (clone $fim)->modify('-7 days');
         // Filtros base
-        $where = "WHERE data BETWEEN :inicio AND :fim";
+        $where = "WHERE data BETWEEN :inicio AND :fim AND playerId=:userId";
         $params = [
             ':inicio' => $inicio->format('Y-m-d H:i:s'),
             ':fim'    => $fim->format('Y-m-d H:i:s')
