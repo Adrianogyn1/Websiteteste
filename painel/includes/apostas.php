@@ -98,40 +98,4 @@
 <div id="dynamic-modal-container"></div>
 
 
-<script>
-    $(document).ready(function () {
-        const $modalContainer = $('#dynamic-modal-container');
-        const $loadModalButtons = $('.load-modal-btn');
-        
-        // 1. Inicialização do Tooltip
-        $('[data-bs-toggle="tooltip"]').tooltip();
-
-        // 2. Lógica para carregar o Modal dinamicamente
-        $loadModalButtons.on('click', function (event) {
-            event.preventDefault(); 
-
-            const $button = $(this);
-            const modalId = $button.data('bs-target'); 
-            const modalUrl = "/app/painel/modals/"+$button.data('modal-url'); 
-
-            // Limpa o conteúdo anterior
-            $modalContainer.empty(); 
-            
-            // Requisita o arquivo HTML do modal
-            $.get(modalUrl)
-                .done(function (htmlContent) {
-                    // Injeta o HTML no container
-                    $modalContainer.html(htmlContent);
-                    
-                    // Inicializa e mostra o modal do Bootstrap
-                    const $newModalElement = $(modalId); 
-                    const modalInstance = new bootstrap.Modal($newModalElement[0]); 
-                    modalInstance.show();
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
-                    console.error(`Falha ao carregar o modal: ${textStatus}`, errorThrown);
-                    alert(`Erro ao carregar a função. Verifique se o arquivo "${modalUrl}" existe.`);
-                });
-        });
-    });
-</script>
+<script style="/app/painel/assets/js/modal_apostas.js"></script>
