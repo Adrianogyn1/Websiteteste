@@ -8,7 +8,7 @@ $port = 3000;
 if(isset($_POST["ligar"])){
     $script = __DIR__ . '/server.js';
     // Comando para rodar em segundo plano e retornar o PID
-    $command = "nohup node {$script} > /dev/null 2>&1 & echo $!";
+    $command = "node {$script} > /dev/null 2>&1 & echo $!";
     $pid = shell_exec($command);
     echo "Servidor ligado! PID: " . trim($pid);
     exit;
