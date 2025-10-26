@@ -38,7 +38,7 @@ $('#ligar').click(function(){
 });
 
 $('#desligar').click(function(){
-    $.post('http://35.209.27.45/admin/teste.php', {desligarteste: true}, function(data){
+    $.post('http://35.209.27.45/app/admin/teste.php', {desligarteste: true}, function(data){
         addStatus(data, 'red');
     });
 });

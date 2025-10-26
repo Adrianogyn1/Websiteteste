@@ -130,7 +130,7 @@
         }
         
         function checkServerStatus() {
-            $.post('http://35.209.27.45/admin/chat.php', { status: true }, function(data) {
+            $.post('http://35.209.27.45/app/admin/chat.php', { status: true }, function(data) {
                 const [status, pidInfo] = data.split(' | '); 
                 updateButtonVisibility(status, pidInfo);
             }).fail(function() {
@@ -142,7 +142,7 @@
         
         $("#ligar").click(function(){
             addStatus('Iniciando o servidor...', 'info');
-            $.post('http://35.209.27.45/admin/chat.php', {ligar: true}, function(data){
+            $.post('http://35.209.27.45/app/admin/chat.php', {ligar: true}, function(data){
               startSocket();
                 // Após ligar, verifica o status para atualizar os botões
                 checkServerStatus(); 
@@ -153,7 +153,7 @@
         
         $("#desligar").click(function(){
             addStatus('Encerrando o servidor...', 'info');
-            $.post('http://35.209.27.45/admin/chat.php', { desligar: true }, function(data) {
+            $.post('http://35.209.27.45/app/admin/chat.php', { desligar: true }, function(data) {
                 // Após desligar, verifica o status para atualizar os botões
                 checkServerStatus();
             }).fail(function() {
