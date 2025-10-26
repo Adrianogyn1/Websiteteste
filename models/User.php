@@ -52,9 +52,9 @@ class User
     public function save(): bool
     {
         if ($this->id > 0) {
-return update();
+return $this->update();
         } else {
-            insert();
+            $this->insert();
         }
     }
     
