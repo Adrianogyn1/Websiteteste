@@ -1,23 +1,20 @@
-Ótima ideia\! Usar mais classes do Bootstrap transforma o layout.
-
-Vou reestruturar o código HTML, colocando o chat dentro de um `card` (cartão) para um visual mais limpo e usando o sistema de grid do Bootstrap para responsividade e espaçamento.
-
-O código PHP e o JavaScript já corrigidos foram incorporados.
-
-### Código HTML/PHP Aprimorado com Bootstrap
-
-```php
 <?php
 
-// GARANTINDO O USO DE $_POST CORRETO
+// =======================================================
+// Lógica de Controle do Servidor (PHP)
+// =======================================================
+
+// LIGAR
 if(isset($_POST["ligar"])){
     $script = __DIR__ . '/server.js';
     // Comando para rodar em segundo plano e retornar o PID
     $command = "nohup node {$script} > /dev/null 2>&1 & echo $!";
     $pid = shell_exec($command);
     echo "Servidor ligado! PID: " . trim($pid);
+    exit;
 }
 
+// DESLIGAR
 if(isset($_POST["desligar"])){
     // Tenta matar o processo Node que contém 'server.js'
     $output = shell_exec("pkill -f 'node server.js' 2>&1");
@@ -27,6 +24,22 @@ if(isset($_POST["desligar"])){
     } else {
         echo "Erro ao desligar o servidor ou servidor não encontrado: " . $output;
     }
+    exit;
+}
+
+// VERIFICAR STATUS
+if(isset($_POST["status"])){
+    // Tenta encontrar o PID do processo 'node server.js'
+    $pid = shell_exec("pgrep -f 'node server.js' 2>&1");
+    
+    if (!empty($pid)) {
+        // Retorna o status de forma simples para o JavaScript
+        echo "rodando | PID: " . trim($pid);
+    } else {
+        echo "parado";
+    }
+    // O PHP deve parar aqui para não retornar o HTML junto com o status
+    exit; 
 }
 
 ?>
@@ -43,20 +56,15 @@ if(isset($_POST["desligar"])){
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
-
+    
     <style>
-        /* Estilo para a caixa de mensagens: altura fixa e scroll */
         #messages { 
-            height: 350px; /* Altura um pouco maior */
+            height: 350px;
             overflow-y: auto; 
             padding: 10px;
-            background-color: #f8f9fa; /* cor de fundo leve */
+            background-color: #f8f9fa;
             border-radius: 0.25rem;
         }
     </style>
@@ -75,11 +83,16 @@ if(isset($_POST["desligar"])){
                     <div class="card-body">
                         
                         <div class="mb-3 d-flex justify-content-between gap-2">
-                            <button id="ligar" class="btn btn-success flex-fill">
+                            
+                            <button id="ligar" class="btn btn-success flex-fill d-none">
                                 <i class="bi bi-power me-1"></i> Ligar
                             </button>
-                            <button id="desligar" class="btn btn-danger flex-fill">
+                            <button id="desligar" class="btn btn-danger flex-fill d-none">
                                 <i class="bi bi-stop-circle-fill me-1"></i> Desligar
+                            </button>
+                            
+                            <button id="status-check" class="btn btn-info flex-fill">
+                                <i class="bi bi-question-circle-fill me-1"></i> Status Atual
                             </button>
                         </div>
                         
@@ -102,13 +115,13 @@ if(isset($_POST["desligar"])){
     </div>
 
     <script>
-        // Termius já tem a chave privada, mas a conexão WebSocket é direta.
-        const ws = new WebSocket('ws://35.209.27.45:3000');
+        // Use a porta correta: 3000
+        const ws = new WebSocket('ws://35.209.27.45:3000'); 
         
+        // --- FUNÇÕES DE CHAT ---
         ws.onmessage = e => 
         {
             $('#messages').append('<div>' + e.data + '</div>');
-            // Mantém o scroll no final
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
         };
 
@@ -118,45 +131,85 @@ if(isset($_POST["desligar"])){
             $('#input').val('');
         });
 
-        // Habilitar envio ao apertar ENTER no campo de input
         $('#input').keypress(function(e) {
             if (e.which == 13) {
                 $('#send').click();
-                return false; // Previne o submit de formulário
+                return false;
             }
         });
         
-        // Função para mostrar o status (com classes de alerta do Bootstrap)
+        // --- FUNÇÕES DE STATUS E UI ---
+        
         function addStatus(message, type) {
             const $statusDiv = $('#status-message');
-            $statusDiv.removeClass('d-none alert-success alert-danger');
-            $statusDiv.addClass(type === 'success' ? 'alert-success' : 'alert-danger');
+            $statusDiv.removeClass('d-none alert-success alert-danger alert-info');
+            $statusDiv.addClass(type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-info');
             $statusDiv.html(message);
         }
 
-        // --- Eventos dos Botões (corrigidos) ---
+        function updateButtonVisibility(status, pidInfo) {
+            const $ligar = $('#ligar');
+            const $desligar = $('#desligar');
+            
+            // Esconde os botões de ligar/desligar
+            $ligar.addClass('d-none');
+            $desligar.addClass('d-none');
+
+            // Define qual botão deve aparecer e atualiza o status
+            if (status === 'rodando') {
+                $desligar.removeClass('d-none');
+                addStatus(`Servidor RODANDO! ${pidInfo}`, 'success');
+            } else { // 'parado'
+                $ligar.removeClass('d-none');
+                addStatus("Servidor PARADO.", 'danger');
+            }
+        }
+        
+        function checkServerStatus() {
+            $.post('', { status: true }, function(data) {
+                const [status, pidInfo] = data.split(' | '); 
+                updateButtonVisibility(status, pidInfo);
+            }).fail(function() {
+                addStatus("Erro ao comunicar com o servidor web (PHP).", 'danger');
+            });
+        }
+
+        // --- EVENTOS DOS BOTÕES ---
         
         $("#ligar").click(function(){
-            addStatus('Tentando ligar o servidor...', 'info'); // 'info' temporário
+            addStatus('Iniciando o servidor...', 'info');
             $.post('', {ligar: true}, function(data){
-                addStatus(data, 'success');
+                // Após ligar, verifica o status para atualizar os botões
+                checkServerStatus(); 
             }).fail(function() {
                 addStatus("Erro na requisição para ligar.", 'danger');
             });
         });
         
-        // Correção de ID de #desliga para #desligar
         $("#desligar").click(function(){
-            addStatus('Tentando desligar o servidor...', 'info'); // 'info' temporário
+            addStatus('Encerrando o servidor...', 'info');
             $.post('', { desligar: true }, function(data) {
-                addStatus(data, 'success');
+                // Após desligar, verifica o status para atualizar os botões
+                checkServerStatus();
             }).fail(function() {
                 addStatus("Erro na requisição para desligar.", 'danger');
             });
         });
         
-        eruda.init();
+        // Botão de verificação manual (opcional, mas útil)
+        $("#status-check").click(checkServerStatus);
+
+        // --- INICIALIZAÇÃO E LOOP DE VERIFICAÇÃO ---
+
+        $(document).ready(function() {
+            // 1. Executa a primeira verificação imediatamente ao carregar
+            checkServerStatus(); 
+            
+            // 2. Define o loop de verificação automática a cada 5 segundos (5000ms)
+            setInterval(checkServerStatus, 5000); 
+            
+            eruda.init();
+        });
     </script>
 </body>
 </html>
-```
