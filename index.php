@@ -11,7 +11,7 @@
         <a href="/app/api/index.php">api</a>
         
 <?php 
-//include_once './includes/footer.php'; 
+include_once './includes/footer.php'; 
 ?>
 
 
