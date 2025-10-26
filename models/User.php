@@ -63,7 +63,7 @@ return $this->update();
         
             $insert = (bool) $this->db->query(
                 "INSERT INTO users (nome, email, senha, criado_em) VALUES (?, ?, ?, ?)",
-                [$this->nome, $this->email, $this->senha, $user->criado_em]
+                [$this->nome, $this->email, $this->senha, $this->criado_em]
             );
             
             $this->id = (int)$this->db->getPdo()->lastInsertId();
