@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     
     $user = new User();
-    $user.create($nome,$email,$senha);
-    $user.save();
+    $user->create($nome,$email,$senha);
+    $user->save();
     
         
        
