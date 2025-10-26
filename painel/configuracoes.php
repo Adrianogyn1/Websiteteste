@@ -130,7 +130,7 @@
 <script>
 $(function() {
     // Simulação de salvamento local (mock)
-    $('#formConfigGeral, #formSistema, #formSeguranca').on('submit', function(e) {
+    $('#formConfigGeral, #formSeguranca').on('submit', function(e) {
         e.preventDefault();
         alert('Configurações salvas com sucesso!');
         // Aqui poderia ir um $.post('api/config/salvar.php', $(this).serialize())
