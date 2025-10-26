@@ -6,7 +6,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Caminho ajustado para o seu autoloader
-require_once(dirname(__DIR__, 3) . '/autoload.php'); 
+require_once(dirname(__DIR__, 2) . '/autoload.php'); 
 session_start();
 
 $id = intval($_GET['id'] ?? 0);
