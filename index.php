@@ -1,4 +1,6 @@
-<?php include_once './includes/header.php'; ?>
+<?php 
+include_once './includes/header.php'; 
+?>
 
     
     <h2>Bem-vindo</h2>
@@ -8,7 +10,9 @@
     <br/>
         <a href="/app/api/index.php">api</a>
         
-<?php include_once './includes/footer.php'; ?>
+<?php 
+//include_once './includes/footer.php'; 
+?>
 
 
 
