@@ -163,8 +163,22 @@ if (!isset($_SESSION['user'])) {
             <span class="material-symbols-outlined">settings</span> chat
         </a>
         
+          <a href="#" id="formSistema">
+            <span class="material-symbols-outlined">settings</span> Update
+        </a>
+        
         <a href="configuracoes.php">
             <span class="material-symbols-outlined">settings</span> Configurações
         </a>
     </div>
 </div>
+
+<script>
+    $('#formSistema').on('click', function(e) {
+        e.preventDefault();
+
+            
+            $.post('/git.php', {atualizar: true}, function(data){
+        alert('atualizado');
+    });
+</script>

@@ -67,8 +67,7 @@ session_start();
             </div>
             
             <script>
-            $("#modalEdit").load("conteudo-modal.html", function () {
-    
+            
                 // Botão dentro do conteúdo carregado
                 $("#btn-salvar").on("click", function (e) {
                     e.preventDefault();
@@ -80,7 +79,7 @@ session_start();
                     Close();
                 });)
                 
-            });
+
        
 
             
