@@ -28,18 +28,21 @@ if(isset($_POST["desligar"])){
     exit;
 }
 
-// VERIFICAR STATUS
+//// VERIFICAR STATUS
 if(isset($_POST["status"])){
-    // Tenta encontrar o PID do processo 'node server.js'
-    $pid = shell_exec("pgrep -f 'node server.js' 2>&1");
-    
-    if (!empty($pid)) {
-        // Retorna o status de forma simples para o JavaScript
-        echo "rodando | PID: " . trim($pid);
+    $port = 3000;
+
+    // Tenta encontrar o PID que está usando a porta 3000
+    $pid_running = shell_exec("lsof -t -i :{$port} 2>/dev/null");
+    $pid_running = trim($pid_running);
+
+    if (!empty($pid_running)) {
+        // Porta em uso, então o servidor está ativo.
+        echo "rodando | PID: " . $pid_running;
     } else {
+        // Porta não em uso, então o servidor está parado.
         echo "parado";
     }
-    // O PHP deve parar aqui para não retornar o HTML junto com o status
     exit; 
 }
 
