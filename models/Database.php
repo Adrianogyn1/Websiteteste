@@ -15,11 +15,12 @@ class Database
        $ip_do_host = $_SERVER['SERVER_ADDR'];
        $google = $ip_do_host=="35.209.27.45"|| $ip_do_host == "10.128.0.2";
        
-       if($google){
-           $this->host="localhost";
+       if($google)
+       {
+          $this->host="localhost";
           $this->dbname="site";
-           $this->user="adriano";
-           $this->pass="12345";
+          $this->user="adriano";
+          $this->pass="12345";
        }
        
         $this->connect();
