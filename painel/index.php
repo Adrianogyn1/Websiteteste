@@ -17,7 +17,7 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <h2>Bem-vindo, <?= htmlspecialchars($_SESSION['user']) ?></h2>
 
 
-<?php include_once __DIR__.'/includes/menu.php'; ?>
+<?php include_once __DIR__.'/includes/apostas.php'; ?>
 
 
 <!-- Select de carteiras -->

@@ -54,7 +54,7 @@
         </div>
 
 
-<?php include_once __DIR__.'/includes/menu.php'; ?>
+<?php include_once __DIR__.'/includes/apostas.php'; ?>
 
 
 

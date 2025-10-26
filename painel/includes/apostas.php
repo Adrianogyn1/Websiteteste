@@ -47,7 +47,7 @@
            class="btn btn-primary" 
            data-bs-toggle="tooltip" 
            data-bs-placement="bottom" 
-           title="Adicionar Jogos de Cassino" 
+           title="Aposta em Cassino" 
            data-bs-target="#modalCassino">
             <span class="material-symbols-outlined">casino</span> 
         </a>
