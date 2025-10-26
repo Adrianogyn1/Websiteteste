@@ -15,9 +15,10 @@ if(isset($_POST["ligar"])){
 }
 
 // DESLIGAR
+// No seu arquivo PHP, bloco 'desligar'
 if(isset($_POST["desligar"])){
-    // Tenta matar o processo Node que contém 'server.js'
-    $output = shell_exec("pkill -f 'node server.js' 2>&1");
+    // Agora o comando usa sudo e o sinal -9 para forçar o encerramento
+    $output = shell_exec("sudo pkill -9 -f 'node server.js' 2>&1");
     
     if (empty($output)) {
         echo "Servidor desligado com sucesso!";
