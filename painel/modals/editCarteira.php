@@ -12,24 +12,7 @@ session_start();
 $id = intval($_GET['id'] ?? 0);
 
 // Substitua esta classe de simulação pela sua classe real
-class Carteira {
-    public $id = 0;
-    public $nome = '';
-    public $url = '';
-    public $login = '';
-    public $useRelatorio = 0; 
-    
-    public function read($id) {
-        if ($id == 1) { // Simulação de dados de edição
-            $this->id = 1;
-            $this->nome = 'Carteira Principal';
-            $this->url = 'http://example.com';
-            $this->login = 'user@exemplo.com';
-            $this->useRelatorio = 1;
-        }
-        // Em um cenário real, você buscaria do banco aqui
-    }
-}
+
 
 $carteira = new Carteira();
 if ($id) {
