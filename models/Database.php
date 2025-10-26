@@ -10,21 +10,28 @@ class Database
     private string $pass = 'comsenha12';
  
 
-    public function __construct() {
-       
-       $ip_do_host = $_SERVER['SERVER_ADDR'];
-       $google = $ip_do_host=="35.209.27.45"|| $ip_do_host == "10.128.0.2";
-       
-       if($google)
-       {
-          $this->host="localhost";
-          $this->dbname="site";
-          $this->user="adriano";
-          $this->pass="12345";
-       }
-       
-        $this->connect();
-    }
+    public function __construct()
+{
+   
+   $ip_do_host = $_SERVER['SERVER_ADDR'];
+   
+   // Verifica se é o IP fixo PÚBLICO OU se é um IP PRIVADO (10.x.x.x é o mais comum)
+   $ip_google_fixo = "35.209.27.45"; 
+   $is_private_network = (substr($ip_do_host, 0, 3) === "10."); 
+   
+   $is_google_cloud = ($ip_do_host == $ip_google_fixo) || $is_private_network;
+   
+   if($is_google_cloud)
+   {
+      // Configuração de Desenvolvimento
+      $this->host="localhost";
+      $this->dbname="site";
+      $this->user="adriano";
+      $this->pass="12345";
+   }
+   
+   $this->connect();
+}
 
     private function connect(): void
     {
