@@ -25,11 +25,7 @@ class Carteira
     public function __construct()
     {
         $this->db = new Database();
-       // $this->config = new GestaoConfig();
-        $this->gamesLink = [];
-        $this->gestoes = [];
-        $this->pagamentos = [];
-       // $this->createTable();
+
     }
 
     public function createTable(): void
