@@ -4,10 +4,10 @@ class Database
 {
     private PDO $pdo;
 
-    private string $host = 'sql105.infinityfree.com';
-    private string $dbname = 'if0_39810583_website';
-    private string $user = 'if0_39810583';
-    private string $pass = 'comsenha12';
+    public string $host = 'sql105.infinityfree.com';
+    public string $dbname = 'if0_39810583_website';
+    public string $user = 'if0_39810583';
+    public string $pass = 'comsenha12';
  
 
     public function __construct()
