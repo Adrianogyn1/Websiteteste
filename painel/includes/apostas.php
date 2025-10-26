@@ -112,7 +112,7 @@
 
             const $button = $(this);
             const modalId = $button.data('bs-target'); 
-            const modalUrl = "/app/painel/modal/"+$button.data('modal-url'); 
+            const modalUrl = "/app/painel/modals/"+$button.data('modal-url'); 
 
             // Limpa o conteúdo anterior
             $modalContainer.empty(); 
