@@ -136,19 +136,34 @@ $(function() {
         // Aqui poderia ir um $.post('api/config/salvar.php', $(this).serialize())
     });
     
-     $('#formSistema').on('submit', function(e) {
-        e.preventDefault();
-
-            
-            $.post('/git.php', {atualizar: true}, function(data){
-        alert('atualizado');
-    });
-     });
+  
     
     
 });
 
 
+</script>
+
+<script>
+   $('#formSistema').on('click', function(e) {
+    e.preventDefault();
+    
+    // Correção: A função de callback deve ser fechada com '})' e a chamada $.post() deve ser fechada com ')' e ';'.
+    $.post('/git.php', { atualizar: true }, function(data) {
+        // O 'data' será a resposta do arquivo git.php
+        alert('Atualização Concluída: ' + data);
+        
+        // Opcional: Recarregar a página após o update
+         window.location.reload(); 
+        
+        // Fechando a função de callback e a chamada $.post()
+    }).fail(function(xhr, status, error) {
+        // Adicionar um tratamento de erro é uma boa prática
+        alert('Erro na Atualização: Verifique o console ou a resposta do servidor. Status: ' + status);
+        console.error("Erro na requisição AJAX:", error);
+        console.log("Resposta do Servidor:", xhr.responseText);
+    });
+});
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>

@@ -124,7 +124,7 @@ class Carteira
             $this->senha,
             $this->teste ? 1 : 0,
             $this->selected ? 1 : 0,
-            $this->id
+           "'". $this->id."'"
         ]);
 
         return true;
