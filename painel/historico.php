@@ -53,6 +53,11 @@
             </div>
         </div>
 
+
+<?php include_once __DIR__.'/includes/menu.php'; ?>
+
+
+
         <!-- ===== TABELA ===== -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-dark text-light d-flex align-items-center justify-content-between">

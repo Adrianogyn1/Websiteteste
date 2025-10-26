@@ -12,6 +12,9 @@
                 <span class="material-symbols-outlined me-1">add</span> Nova Carteira
             </button>
         </div>
+        
+        <?php include_once __DIR__.'/includes/menu.php'; ?>
+
 
         <div class="row g-3" id="carteirasList">
             </div>
