@@ -7,7 +7,8 @@
     <a href="/app/login.php">Login</a>
     <br/>
         <a href="/app/api/index.php">api</a>
-        <?php include __DIR__.'/includes/footer.php'; ?>
+        
+<?php include __DIR__.'/includes/footer.php'; ?>
 
 
 
