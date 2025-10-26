@@ -1,88 +1,44 @@
 <?php include __DIR__.'/includes/header.php'; ?>
 
-
 <main class="container-fluid pt-5 mt-3">
     <div class="container py-4">
 
-        <!-- ===== TÍTULO E AÇÃO ===== -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0">
                 <span class="material-symbols-outlined align-middle text-primary">account_balance_wallet</span>
                 Minhas Carteiras
             </h3>
-            <button class="btn btn-primary d-flex align-items-center" id="btn-add-carteira" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
+            <button class="btn btn-primary d-flex align-items-center" id="btn-add-carteira">
                 <span class="material-symbols-outlined me-1">add</span> Nova Carteira
             </button>
         </div>
 
-        <!-- ===== CARDS DE CARTEIRAS ===== -->
         <div class="row g-3" id="carteirasList">
-            <!-- Cards carregados via JS -->
-        </div>
-
-        <!-- ===== MODAL NOVA/EDITAR CARTEIRA ===== -->
-        <div class="modal fade" id="novaCarteiraModal" tabindex="-1" aria-labelledby="novaCarteiraLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content border-0 shadow">
-                    <div class="modal-header bg-dark text-light">
-                        <h5 class="modal-title" id="novaCarteiraLabel">
-                            <span class="material-symbols-outlined align-middle">add_circle</span>
-                            Carteira
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form id="formNovaCarteira" method="POST">
-                        <input type="hidden" id="carteiraId">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="nomeCarteira" class="form-label">Nome da Carteira</label>
-                                <input type="text" class="form-control" id="nomeCarteira" name="nome" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="carteiraUrl" class="form-label">Url</label>
-                                <input type="text" class="form-control" id="carteiraUrl" name="url" >
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="carteiraLogin" class="form-label">Login</label>
-                                <input type="text" class="form-control" id="carteiraLogin" name="login" >
-                            </div>
-                            
-                           <div class="mb-3">
-                                <label for="carteiraRelatorio" class="form-label">Use Relatório</label>
-                                <input type="checkbox" class="form-control" id="carteiraRelatorio" name="useRelatorio" >
-                            </div>
-                            
-                            
-
-                            
-                            
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Salvar</button>
-                        </div>
-                    </form>
-                </div>
             </div>
-        </div>
 
+        <div id="modal-container"></div>
+        
     </div>
 </main>
 
 <script>
 const MAX_CARTEIRAS = 10;
+const MODAL_ID = '#modalEdit';
+const FORM_ID = '#formNovaCarteira';
+const API_URL = '/app/api/carteira/';
 
-// Carregar carteiras
+// ==========================================================
+// FUNÇÃO PRINCIPAL PARA CARREGAR A LISTA
+// ==========================================================
 function loadCarteiras() {
-    $.getJSON('/app/api/carteira/list.php', function(resp){
+    $.getJSON(API_URL + 'list.php', function(resp){
         if(!resp.sucess) {
             $('#carteirasList').html('<p class="text-danger">'+resp.msg+'</p>');
             return;
         }
 
-        const data = resp.data.data.slice(0, MAX_CARTEIRAS);
+        // Simulação de como você está tratando a resposta da API
+        const data = resp.data.data ? resp.data.data.slice(0, MAX_CARTEIRAS) : [];
         $('#carteirasList').empty();
 
         if(data.length === 0){
@@ -103,7 +59,7 @@ function loadCarteiras() {
                         </div>
                         <div class="mt-3 d-flex justify-content-between">
                             <button class="btn btn-sm btn-outline-secondary btn-edit" title="Editar"><span class="material-symbols-outlined">edit</span></button>
-                                 <button class="btn btn-sm btn-outline-info btn-select" title="Editar"><span class="material-symbols-outlined">select</span></button>
+                            <button class="btn btn-sm btn-outline-info btn-select" title="Selecionar"><span class="material-symbols-outlined">select</span></button>
                             <button class="btn btn-sm btn-outline-danger btn-delete" title="Excluir"><span class="material-symbols-outlined">delete</span></button>
                         </div>
                     </div>
@@ -114,32 +70,121 @@ function loadCarteiras() {
     });
 }
 
+// ==========================================================
+// FUNÇÕES DE AÇÃO DO MODAL
+// ==========================================================
 
+// Função para carregar o modal de adição/edição
+function loadModalCarteira(id) {
+    
+    // 1. Limpa o DOM de qualquer modal anterior
+    $('#modal-container').empty(); 
+    $('.modal-backdrop').remove(); // Garante a remoção do fundo escuro
+    
+    // 2. Carrega o novo conteúdo do modal (que irá para #modal-container)
+    $.ajax({
+        url: '/app/painel/modals/editCarteira.php?id=' + id,
+        method: 'GET',
+        success: function(htmlDoModal) {
+           
+           // 3. Insere o modal no container
+           $('#modal-container').html(htmlDoModal);
+           
+           // 4. Exibe o modal
+           $(MODAL_ID).modal('show');
+        },
+        error: function(xhr, status, error) {
+            alert("Erro ao carregar modal. Verifique o arquivo editCarteira.php");
+        }
+    });
+}
 
+// Função para salvar os dados via AJAX
+function saveCarteira() {
+    
+    const form = $(FORM_ID);
+    const formDataArray = form.serializeArray();
+    let formData = {};
+    
+    $(formDataArray).each(function(i, field){
+        formData[field.name] = field.value;
+    });
 
-//criar carteira
-$('#btn-add-carteira').click(function(){
-    EditarCarteira(0);
-});
+    // Tratamento do checkbox (que só envia se estiver marcado)
+    if (formData['useRelatorio'] === undefined) {
+         formData['useRelatorio'] = 0;
+    } else {
+         formData['useRelatorio'] = 1;
+    }
 
-// Editar carteira
-$('#carteirasList').on('click', '.btn-edit', function(){
-
-    const card = $(this).closest('[data-id]');
-    const id = card.data('id');
-
-    EditarCarteira(id);
-});
-
-// Excluir carteira
-$('#carteirasList').on('click', '.btn-delete', function(){
-    if(!confirm('Deseja realmente excluir esta carteira?')) return;
-
-    const card = $(this).closest('[data-id]');
-    const id = card.data('id');
+    // Validação básica
+    if(!formData.nome) {
+        alert("O nome da carteira é obrigatório.");
+        return;
+    }
 
     $.ajax({
-        url: '/app/api/carteira/delete.php',
+        url: API_URL + 'save.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(resp) {
+            
+            if(resp.sucess){
+                alert(resp.msg);
+            
+                // Fecha o modal
+                $(MODAL_ID).modal('hide');
+                
+                // Recarrega a lista
+                loadCarteiras();
+
+            } else {
+                alert('Erro ao salvar: ' + resp.msg);
+            }
+        },
+        error: function(xhr, status, error) {
+             alert('Erro na comunicação com o servidor: ' + error);
+        }
+    });
+}
+
+
+// ==========================================================
+// EVENT HANDLERS (Onde o usuário clica)
+// ==========================================================
+
+// 1. ABRIR MODAL: Adicionar Nova Carteira (ID 0)
+$('#btn-add-carteira').on('click', function(){
+    loadModalCarteira(0);
+});
+
+// 2. ABRIR MODAL: Editar Carteira (Pega o ID do card)
+$('#carteirasList').on('click', '.btn-edit', function(){
+    const id = $(this).closest('[data-id]').data('id');
+    loadModalCarteira(id);
+});
+
+// 3. SALVAR: Submissão do Formulário Carregado Dinamicamente
+$('body').on('submit', FORM_ID, function (e) {
+    e.preventDefault();
+    saveCarteira();
+});
+
+// 4. FECHAR: Remoção do Modal e Lixo do DOM (Após animação)
+$('body').on('hidden.bs.modal', MODAL_ID, function () {
+    // Remove o modal e o fundo do DOM para que ele seja carregado "limpo" novamente
+    $(this).remove();
+    $('.modal-backdrop').remove(); 
+});
+
+
+// Eventos de Excluir e Selecionar (Mantidos)
+$('#carteirasList').on('click', '.btn-delete', function(){
+    if(!confirm('Deseja realmente excluir esta carteira?')) return;
+    const id = $(this).closest('[data-id]').data('id');
+    $.ajax({
+        url: API_URL + 'delete.php',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ id }),
@@ -150,99 +195,25 @@ $('#carteirasList').on('click', '.btn-delete', function(){
     });
 });
 
-
-// selecionar carteira
 $('#carteirasList').on('click', '.btn-select', function(){
-    //if(!confirm('Deseja realmente excluir esta carteira?')) return;
-
-    const card = $(this).closest('[data-id]');
-    const id = card.data('id');
-
+    const id = $(this).closest('[data-id]').data('id');
     $.ajax({
-        url: '/app/api/carteira/setCarteira.php',
+        url: API_URL + 'setCarteira.php',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ id }),
-        success: function(resp)
-        {
+        success: function(resp) {
             alert(resp.msg);
             loadCarteiras();
         }
     });
 });
 
-function EditarCarteira(id){
-    $.ajax({
-        url: '/app/painel/modals/editCarteira.php?id='+id,
-        method: 'GET',
-        contentType: 'application/html',
-        //data: JSON.stringify({ id }),
-        success: function(resp)
-        {
-           // alert(resp.msg);
-          //  loadCarteiras();
-          $('html').append(resp);
-          $('#modalEdit').modal('show');
-        }
-    });
-}
 
-// Inicial
-$(function(){ loadCarteiras(); });
+// Inicialização
+$(function(){ 
+    loadCarteiras(); 
+});
 </script>
-
-
-     <script>
-            
-                // Botão dentro do conteúdo carregado
-                $('body').on('click','#btn-salvar',function (e) {
-                    e.preventDefault();
-                    Salvar();
-                });
-            
-                // Evento do Bootstrap continua igual
-                $("html").on("hidden.bs.modal", function (e) {
-                    Close();
-                });
-                
-
-       
-
-            
-                function Salvar()
-                {
-                    
-                    const id = $('#carteiraId').val() || 0;
-                    const nome = $('#nomeCarteira').val();
-                   // const tipo = $('#tipoCarteira').val();
-                   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
-                
-                    if(!nome ) return;
-                
-                    $.ajax({
-                        url: '/app/api/carteira/save.php',
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ id, nome }),
-                        success: function(resp)
-                        {
-                            
-                            if(resp.sucess){
-                                alert(resp.msg);
-                            
-                            }else{
-                                alert(resp.msg);
-                            }
-                        }
-                    });
-
-                }
-                
-                function Close()
-                {
-                    $('html').remove('#modalEdit');
-                }
-      
-            </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>
