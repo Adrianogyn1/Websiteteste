@@ -78,7 +78,9 @@ session_start();
                 // Evento do Bootstrap continua igual
                 $("html").on("hidden.bs.modal", function (e) {
                     Close();
-                });
+                });)
+                
+            };
        
 
             
@@ -115,6 +117,6 @@ session_start();
                 {
                     $('html').remove('#modalEdit');
                 }
-      });
+      
             </script>
         </div>
