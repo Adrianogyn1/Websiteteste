@@ -1,129 +1,103 @@
 <?php
+// /app/api/carteira/save.php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-
 session_start();
 
-// Verifica login
-if (!isset($_SESSION['user'])) {
-    (new ApiMessage(false, 'Usuário não logado'))->toJson();
+// O PayerId virá da sessão, se estiver configurado
+$userId = $_SESSION['id'] ?? 0; 
+
+// --- VERIFICAÇÃO DE LOGIN ---
+// Se não estiver logado OU o ID da sessão for inválido
+if (!isset($_SESSION['user']) || $userId <= 0) {
+    (new ApiMessage(false, 'Sessão inválida. Usuário não logado.'))->toJson();
 }
 
-$userId = $_SESSION['id'] ?? 0;
-
 try {
+    // 1. LER E DECODIFICAR O JSON DA REQUISIÇÃO
     $input = json_decode(file_get_contents('php://input'), true);
-    $id = intval($input['id'] ?? 0);
-    $nome = trim($input['nome'] ?? '');
-    $meta = trim($input['meta'] ?? '');
-    //$tipo = trim($input['tipo'] ?? '');
-   // $saldo = floatval($input['saldo'] ?? 0);
-    //$teste = isset($input['teste']) ? (bool)$input['teste'] : false;
-    $userId = 1;
-    $useRelatorio = true;
-    $url=trim($input['url'] ?? '');
-    $login=trim($input['login'] ?? '');;
-    $senha=trim($input['senha'] ?? '');;
-    $selected =isset($input['selected']) ? (bool)$input['selected'] : false;;
-        
     
-
-    if (!$nome ) {
-        (new ApiMessage(false, 'Nome  obrigatório'))->toJson();
+    // Se o input não for um array ou for vazio, há um erro na requisição
+    if (!is_array($input)) {
+         (new ApiMessage(false, 'Dados de requisição inválidos (não é JSON).'))->toJson();
     }
     
+    // 2. EXTRAIR E SANITIZAR OS CAMPOS
+    $id = intval($input['id'] ?? 0);
+    $nome = trim($input['nome'] ?? '');
     
+    // Campos opcionais/específicos:
+    $meta = trim($input['meta'] ?? '');
+    $url = trim($input['url'] ?? '');
+    $login = trim($input['login'] ?? '');
+    $senha = trim($input['senha'] ?? '');
+    
+    // Campo booleano (checkbox): Envia '1' se marcado, ou é ausente se desmarcado.
+    // Usamos intval para ter certeza que é 0 ou 1, que será tratado pelo __set
+    $useRelatorio = intval($input['useRelatorio'] ?? 0); 
+    
+    // O campo 'selected'
+    $selected = isset($input['selected']) ? (bool)$input['selected'] : false;
 
+    // --- VALIDAÇÕES BÁSICAS ---
+    if (!$nome) {
+        (new ApiMessage(false, 'O nome da carteira é obrigatório.'))->toJson();
+    }
+    
     $db = (new Database())->getPdo();
 
-    // Limite de 10 carteiras por usuário
+    // 3. VERIFICAR LIMITE DE CARTEIRAS (APENAS PARA NOVAS CRIAÇÕES)
     if ($id === 0) {
         $stmtCount = $db->prepare("SELECT COUNT(*) as total FROM Carteira WHERE PayerId = :uid");
         $stmtCount->execute([':uid' => $userId]);
         $total = (int)$stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
         if ($total >= 10) {
-            (new ApiMessage(false, 'Você já possui 10 carteiras'))->toJson();
+            (new ApiMessage(false, 'Limite de 10 carteiras atingido. Exclua uma para adicionar uma nova.'))->toJson();
         }
     }
     
-$carteira = new Carteira();
+    // 4. LER OU CRIAR O OBJETO CARTEIRA
+    $carteira = new Carteira();
     if ($id > 0) {
-        
-        
-        $carteira = $carteira->read($id);
-        
-        
-        
-        // Atualizar carteira existente
-       /* $stmt = $db->prepare("
-            UPDATE carteira SET 
-                nome = :nome, 
-                meta = :meta, 
-                PayerId=:player,
-                saldo = :saldo, 
-                teste = :teste, 
-                updated_at = NOW()
-            WHERE id = :id AND user_id = :uid
-        ");
-        $stmt->execute([
-            ':nome' => $nome,
-            ':meta' => $meta,
-            ':player' => $userId,
-            //':tipo' => $tipo,
-            ':saldo' => $saldo,
-            ':teste' => $teste,
-            ':id' => $id,
-            ':uid' => $userId
-        ]);*/
-
-        //(new ApiMessage(true, 'Carteira atualizada com sucesso'))->toJson();
+        // Se for edição, use o método read. 
+        // Assumimos que read() preenche o objeto ou falha/deixa $carteira->id=0 se não encontrar.
+        if (!$carteira->read($id) || $carteira->id === 0) {
+             (new ApiMessage(false, 'Carteira não encontrada para edição (ID: ' . $id . ').'))->toJson();
+        }
     } 
-    /*else {
-        // Criar nova carteira
-        $stmt = $db->prepare("
-            INSERT INTO carteira 
-                (user_id, nome, meta, saldo, teste, created_at, updated_at) 
-            VALUES 
-                (:uid, :nome, :meta, :saldo, :teste, NOW(), NOW())
-        ");
-        $stmt->execute([
-            ':uid' => $userId,
-            ':nome' => $nome,
-            ':meta' => $meta,
-          //  ':tipo' => $tipo,
-            ':saldo' => $saldo,
-            ':teste' => $teste
-        ]);
-
-        $novoId = $db->lastInsertId();
-        (new ApiMessage(true, 'Carteira criada com sucesso', ['id' => $novoId]))->toJson();
-    }
-    */
-    if(isset($input['nome']))
-        $carteira->nome = $nome;
-    if(isset($input['meta']))
-        $carteira->meta = $meta;
-    if(isset($input['useRelatorio']))
-        $carteira->useRelatorio = $useRelatorio;
     
-    $carteira->PayerId = $userId;
-    if(isset($input['url']))
-        $carteira->url = $url;
-    if(isset($input['login']))
-        $carteira->login = $login;
-    if(isset($input['senha']))
+    // 5. ATUALIZAR O OBJETO CARTEIRA com os dados do INPUT
+    // O uso da sintaxe de propriedade direta (->propriedade) invoca o __set() da classe Carteira.
+
+    $carteira->nome = $nome;
+    $carteira->PayerId = $userId; // ID do usuário que está salvando
+    $carteira->useRelatorio = $useRelatorio;
+    $carteira->selected = $selected;
+
+    // Campos que podem ser vazios ou opcionais, mas que o __set pode tratar.
+    $carteira->meta = $meta;
+    $carteira->url = $url;
+    $carteira->login = $login;
+    
+    // A senha SÓ deve ser atualizada se um novo valor foi fornecido.
+    if (!empty($senha)) {
+        // O __set() da classe Carteira deve aplicar o password_hash() aqui.
         $carteira->senha = $senha;
-    if(isset($input['selected']))
-        $carteira->selected = $selected;
+    }
         
+    // 6. SALVAR
     $carteira->save();
         
-    (new ApiMessage(true, 'Carteira salva com sucesso',$carteira))->toJson();
+    // 7. RETORNO DA API
+    // Retorna o objeto (já com o novo ID/data de update) como array para o JSON
+    (new ApiMessage(true, 'Carteira salva com sucesso.', $carteira->toArray()))->toJson();
         
 
 } catch (Exception $e) {
-    (new ApiMessage(false, $e->getMessage()))->toJson();
+    // Tratamento de erros de banco de dados, __set() ou outras exceções
+    (new ApiMessage(false, 'Erro ao processar a requisição: ' . $e->getMessage()))->toJson();
 }
