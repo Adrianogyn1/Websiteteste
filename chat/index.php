@@ -1,4 +1,5 @@
 <?php
+
 if(isset($_post["ligar"])){
     $script = __DIR__ . '/server.js';
     $output = shell_exec('node '.$script);
@@ -78,12 +79,16 @@ echo $output ?: "Servidor desligado! ";
             $('#input').val('');
         });
         
-        $("ligar").click(function(){
-            $.post('/')?????
+        $("#ligar").click(function(){
+            $.post('', {ligar: true}, function(data){
+        addStatus(data, 'green');
+    });
         })
         
-            $("desliga").click(function(){
-            $.post('/')?????
+            $("#desliga").click(function(){
+            $.post('', { desligar: true }, function(data) {
+    addStatus(data, 'green');
+});
         })
     </script>
     
