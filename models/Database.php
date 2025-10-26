@@ -17,10 +17,11 @@ class Database
        
        if($google){
            $this->host="localhost";
-          $this->$dbname="site";
-           $this->$user="adriano";
-           $this->$pass="12345";
+          $this->dbname="site";
+           $this->user="adriano";
+           $this->pass="12345";
        }
+       
         $this->connect();
     }
 
