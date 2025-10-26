@@ -7,7 +7,8 @@ error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['id'])) 
+{
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
