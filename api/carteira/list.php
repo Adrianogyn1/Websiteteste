@@ -54,12 +54,15 @@ try {
     $stmt->execute();
 
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$carteiras = [];
-foreach ($data as $row) {
-    $carteira = new Carteira();
-    $carteira->read($row['id']); // supondo que o método read carrega do banco
-    $carteiras[] = $carteira;
-}
+    $carteiras = [];
+    //completa dados
+    foreach ($data as $row) 
+    {
+        $carteira = new Carteira();
+        $carteira->read($row['id']); 
+        $carteira->GetSaldo();//atualizar o saldo
+        $carteiras[] = $carteira;
+    }
 
 $msg = new ApiMessage(true, "Lista carregada", [
     'data' => array_map(fn($c) => $c->toArray(), $carteiras), // converte objetos para array

@@ -29,7 +29,7 @@ try {
     $stmt->execute(['id' => $id]);
     $game = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $msg = new ApiMessage(true, $game ? "Game encontrado" : "Game não encontrado", $game);
+    $msg = new ApiMessage(true, $game ? "carteira encontrado" : "Game não encontrado", $game);
     $msg->toJson();
 } catch (Exception $e) {
     (new ApiMessage(false, $e->getMessage()))->toJson();

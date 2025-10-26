@@ -16,18 +16,9 @@ class Carteira
     public string $created_at ='';
     public string $update_at ='';
     
+    //somente leitura 
     public float $saldo = 0;
 
-    /** @var LinkGame[] */
-    public array $gamesLink = [];
-
-    public ?GestaoConfig $config = null;
-
-    /** @var GestaoHistorico[] */
-    public array $gestoes = [];
-
-    /** @var PaymanetHistorico[] */
-    public array $pagamentos = [];
 
     private Database $db;
 
@@ -154,9 +145,6 @@ class Carteira
         $this->teste = (bool)$data['teste'];
         $this->selected = (bool)$data['selected'];
 
-        // Carregar relações
-        //$this->loadRelations();
-
         return $this;
     }
 
@@ -166,56 +154,7 @@ class Carteira
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function loadRelations(): void
-    {
-        // gamesLink
-        $stmt = $this->db->query("SELECT * FROM link_games WHERE carteiraId = ?", [$this->id]);
-        $this->gamesLink = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $link = new LinkGame();
-            $link->id = (int)$row['id'];
-            $link->carteiraId = (int)$row['carteiraId'];
-            $link->gameId = (int)$row['gameId'];
-            $link->url = $row['url'];
-            $this->gamesLink[] = $link;
-        }
-
-        // config
-        $stmt = $this->db->query("SELECT * FROM gestao_config WHERE carteiraId = ?", [$this->id]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($data) {
-            $this->config = new GestaoConfig();
-            $this->config->id = (int)$data['id'];
-            $this->config->carteiraId = (int)$data['carteiraId'];
-            $this->config->settings = $data['settings'] ?? '';
-        }
-
-        // gestoes
-        $stmt = $this->db->query("SELECT * FROM gestao_historico WHERE carteiraId = ?", [$this->id]);
-        $this->gestoes = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $gestao = new GestaoHistorico();
-            $gestao->id = (int)$row['id'];
-            $gestao->carteiraId = (int)$row['carteiraId'];
-            $gestao->descricao = $row['descricao'] ?? '';
-            $gestao->valor = (float)$row['valor'];
-            $gestao->data = isset($row['data']) ? new DateTime($row['data']) : null;
-            $this->gestoes[] = $gestao;
-        }
-
-        // pagamentos
-        $stmt = $this->db->query("SELECT * FROM paymanet_historico WHERE carteiraId = ?", [$this->id]);
-        $this->pagamentos = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $pag = new PaymanetHistorico();
-            $pag->id = (int)$row['id'];
-            $pag->carteiraId = (int)$row['carteiraId'];
-            $pag->valor = (float)$row['valor'];
-            $pag->type = TransasaoType::from($row['type']);
-            $pag->data = isset($row['data']) ? new DateTime($row['data']) : null;
-            $this->pagamentos[] = $pag;
-        }
-    }
+    
 
     // --- Métodos de cálculo ---
 
