@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (Throwable $e) 
     {
         
-        $msg->msg=  'Erro ao cadastrar usuário'.$err->getMessage();
+        $msg->msg=  'Erro ao cadastrar usuário'.$e->getMessage();
     }
 
 }
