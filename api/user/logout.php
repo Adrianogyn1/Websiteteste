@@ -9,6 +9,9 @@ $msg->msg = "Deslogado com sucesso.";
 
 session_destroy();
 
-$msg->toJson();
+ob_clean(); 
+header("Location: /index.php");
+exit;
+//$msg->toJson();
 
 ?>
