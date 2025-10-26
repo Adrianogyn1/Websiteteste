@@ -47,6 +47,12 @@ body {
     <div id="msg" class="mt-3 text-center"></div>
 </div>
 
+<div><?php
+echo "ip: ".$_SERVER['SERVER_ADDR'];
+?></div>
+
+
+
 <script>
 $(document).ready(function() {
     $("#btnLogin").click(function() {
