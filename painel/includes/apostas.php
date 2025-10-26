@@ -79,7 +79,7 @@
            data-bs-placement="bottom" 
            title="Editar Depósito" 
            data-bs-target="#modalDeposito"
-           data-modal-url="modal_deposito.html">
+           data-modal-url="modal_deposito.php">
             <span class="material-symbols-outlined">account_balance</span> 
         </a>
 
@@ -89,7 +89,7 @@
            data-bs-placement="bottom" 
            title="Editar Retirada" 
            data-bs-target="#modalRetirada"
-           data-modal-url="modal_retirada.html">
+           data-modal-url="modal_retirada.php">
             <span class="material-symbols-outlined">payments</span> 
         </a>
     </div>
