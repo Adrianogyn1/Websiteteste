@@ -11,7 +11,6 @@ session_start();
 
 $id = intval($_GET['id'] ?? 0);
 
-// Substitua esta classe de simulação pela sua classe real
 
 
 $carteira = new Carteira();
@@ -20,7 +19,7 @@ if ($id) {
 }
 
 // Determina se o checkbox deve vir marcado
-$checked = ($carteira->useRelatorio == 1) ? 'checked' : '';
+$checked = ($carteira->useRelatorio) ? 'checked' : '';
 $titulo = $id ? 'Editar Carteira' : 'Nova Carteira';
 
 ?>
