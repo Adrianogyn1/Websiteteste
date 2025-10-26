@@ -164,7 +164,12 @@ if(isset($_POST["status"])){
             $('#input').val('');
         });
 
-        
+        $('#input').keypress(function(e) {
+            if (e.which == 13) {
+                $('#send').click();
+                return false;
+            }
+        });
         
         // --- FUNÇÕES DE STATUS E UI ---
         
