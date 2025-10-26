@@ -135,7 +135,19 @@ $(function() {
         alert('Configurações salvas com sucesso!');
         // Aqui poderia ir um $.post('api/config/salvar.php', $(this).serialize())
     });
+    
+     $('#formSistema').on('submit', function(e) {
+        e.preventDefault();
+
+            
+            $.post('/git.php', {atualizar: true}, function(data){
+        alert('atualizado');
+    });
+    
+    
 });
+
+
 </script>
 
 <?php include __DIR__.'/includes/footer.php'; ?>

@@ -79,35 +79,35 @@ session_start();
                 $("html").on("hidden.bs.modal", function (e) {
                     Close();
                 });
-            });
+       
 
             
                 function Salvar()
                 {
                     
-    const id = $('#carteiraId').val() || 0;
-    const nome = $('#nomeCarteira').val();
-   // const tipo = $('#tipoCarteira').val();
-   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
-
-    if(!nome ) return;
-
-    $.ajax({
-        url: '/app/api/carteira/save.php',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ id, nome }),
-        success: function(resp)
-        {
-            
-            if(resp.sucess){
-                alert(resp.msg);
-            
-            }else{
-                alert(resp.msg);
-            }
-        }
-    });
+                    const id = $('#carteiraId').val() || 0;
+                    const nome = $('#nomeCarteira').val();
+                   // const tipo = $('#tipoCarteira').val();
+                   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
+                
+                    if(!nome ) return;
+                
+                    $.ajax({
+                        url: '/app/api/carteira/save.php',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ id, nome }),
+                        success: function(resp)
+                        {
+                            
+                            if(resp.sucess){
+                                alert(resp.msg);
+                            
+                            }else{
+                                alert(resp.msg);
+                            }
+                        }
+                    });
 
                 }
                 
@@ -115,6 +115,6 @@ session_start();
                 {
                     $('html').remove('#modalEdit');
                 }
-                
+      });
             </script>
         </div>
