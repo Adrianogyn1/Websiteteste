@@ -143,6 +143,7 @@ $(function() {
             $.post('/git.php', {atualizar: true}, function(data){
         alert('atualizado');
     });
+     });
     
     
 });
