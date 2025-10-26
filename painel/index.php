@@ -1,5 +1,5 @@
 <?php include __DIR__.'/includes/header.php'; ?>
-<?php include __DIR__.'/includes/menu.php'; ?>
+
 
 <?php
 require_once __DIR__.'/../autoload.php';
@@ -15,6 +15,10 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <h4 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h4>
 <h2>Bem-vindo, <?= htmlspecialchars($_SESSION['user']) ?></h2>
+
+
+<?php include __DIR__.'/includes/menu.php'; ?>
+
 
 <!-- Select de carteiras -->
 <div class="mb-3">
