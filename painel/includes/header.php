@@ -116,7 +116,7 @@ if (!isset($_SESSION['user'])) {
 <body>
 
 <!-- ===== NAVBAR ===== -->
-<nav class="navbar navbar-dark fixed-top shadow-sm">
+<nav class="navbar navbar-dark top shadow-sm">
     <div class="container-fluid">
         <!-- Botão para abrir menu lateral (mobile) -->
         <button class="btn btn-outline-light d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral">
