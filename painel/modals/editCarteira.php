@@ -66,10 +66,13 @@ session_start();
                 </div>
             </div>
             
+        </div>
+        
+        
             <script>
             
                 // Botão dentro do conteúdo carregado
-                $("#btn-salvar").on("click", function (e) {
+                $("#btn-salvar").click(function (e) {
                     e.preventDefault();
                     Salvar();
                 });
@@ -118,4 +121,3 @@ session_start();
                 }
       
             </script>
-        </div>
