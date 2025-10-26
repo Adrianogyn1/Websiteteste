@@ -1,15 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login</title>
-
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<?php include __DIR__.'/includes/header.php'; ?>
 
 <style>
 body {
@@ -47,9 +36,7 @@ body {
     <div id="msg" class="mt-3 text-center"></div>
 </div>
 
-<div><?php
-echo "ip: ".$_SERVER['SERVER_ADDR'];
-?></div>
+
 
 
 
@@ -91,7 +78,5 @@ $(document).ready(function() {
 });
 </script>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+        <?php include __DIR__.'/includes/footer.php'; ?>
+

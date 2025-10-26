@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Cadastro</title>
-
-<!-- Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<?php include __DIR__.'/includes/header.php'; ?>
 
 <style>
 body {
@@ -99,5 +89,6 @@ $(function() {
 });
 </script>
 
-</body>
-</html>
+
+        <?php include __DIR__.'/includes/footer.php'; ?>
+
