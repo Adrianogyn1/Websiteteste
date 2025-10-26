@@ -54,14 +54,13 @@ class User
         if ($this->id > 0) {
 return $this->update();
         } else {
-            $this->insert();
+           return $this->insert();
         }
     }
     
     public function insert(): bool
     {
-        
-            $insert = (bool) $this->db->query(
+         $this->db->query(
                 "INSERT INTO users (nome, email, senha, criado_em) VALUES (?, ?, ?, ?)",
                 [$this->nome, $this->email, $this->senha, $this->criado_em]
             );
@@ -69,7 +68,6 @@ return $this->update();
             $this->id = (int)$this->db->getPdo()->lastInsertId();
    
             return true;
-        
     }
     
     public function update(): bool
@@ -115,6 +113,5 @@ return $this->update();
 
         return $users;
     }
-    
     
 }

@@ -76,7 +76,7 @@ session_start();
                 });
             
                 // Evento do Bootstrap continua igual
-                $("#modalEdit").on("hidden.bs.modal", function (e) {
+                $("html").on("hidden.bs.modal", function (e) {
                     Close();
                 });
             });

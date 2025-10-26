@@ -10,7 +10,7 @@
                 <span class="material-symbols-outlined align-middle text-primary">account_balance_wallet</span>
                 Minhas Carteiras
             </h3>
-            <button class="btn btn-primary d-flex align-items-center" onclose="javascript:EditarCarteira(0)" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
+            <button class="btn btn-primary d-flex align-items-center" id="btn-add-carteira" <?php /*data-bs-toggle="modal" data-bs-target="#novaCarteiraModal"*/ ?> >
                 <span class="material-symbols-outlined me-1">add</span> Nova Carteira
             </button>
         </div>
@@ -114,53 +114,17 @@ function loadCarteiras() {
     });
 }
 
-// Criar ou atualizar carteira
-$('#formNovaCarteira').on('submit', function(e){
-    e.preventDefault();
-    const id = $('#carteiraId').val() || 0;
-    const nome = $('#nomeCarteira').val();
-   // const tipo = $('#tipoCarteira').val();
-   // const saldo = parseFloat($('#saldoInicial').val()).toFixed(2);
 
-    if(!nome ) return;
 
-    $.ajax({
-        url: '/app/api/carteira/save.php',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ id, nome }),
-        success: function(resp)
-        {
-            
-            if(resp.sucess){
-                alert(resp.msg);
-            $('#novaCarteiraModal').modal('hide');
-            $('#formNovaCarteira')[0].reset();
-            $('#carteiraId').val('');
-            loadCarteiras();
-            }else{
-                alert(resp.msg);
-            }
-        }
-    });
+
+//criar carteira
+$('#btn-add-carteira').click(function(){
+    EditarCarteira(0);
 });
 
 // Editar carteira
 $('#carteirasList').on('click', '.btn-edit', function(){
-   /* const card = $(this).closest('[data-id]');
-    const id = card.data('id');
 
-    $.getJSON(`/app/api/carteira/get.php?id=${id}`, function(resp){
-        if(!resp.sucess) return alert(resp.msg);
-
-        const c = resp.data;
-        $('#carteiraId').val(c.id);
-        $('#nomeCarteira').val(c.nome);
-     //   $('#carteiraUrl').val(c.url);
-       // $('#carteiraLogin').val(c.login);
-        $('#novaCarteiraModal').modal('show');
-    });*/
-    
     const card = $(this).closest('[data-id]');
     const id = card.data('id');
 
