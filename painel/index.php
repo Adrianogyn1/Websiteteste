@@ -8,7 +8,7 @@ session_start();
 $userId = $_SESSION['id'] ?? 0;
 
 $db = (new Database())->getPdo();
-$stmt = $db->prepare("SELECT id, nome FROM Carteira WHERE PayerId = :uid");
+$stmt = $db->prepare("SELECT id, nome, selected FROM Carteira WHERE PayerId = :uid");
 $stmt->execute([':uid' => $userId]);
 $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -26,7 +26,7 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <select id="selectCarteira" class="form-select">
         <option value="0">Todas</option>
         <?php foreach($carteiras as $c): 
-        if($c->selected)
+        if($c['selected'])
         {
             ?>
                          <option value="<?= $c['id'] ?>" selected="true"><?= htmlspecialchars($c['nome']) ?></option>
@@ -35,7 +35,7 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
         else
         {
                         ?>
-                         <option value="<?= $c['id'] ?>" ><?= htmlspecialchars($c['nome']) ?>  <?php echo $c->selected; ?></option>
+                         <option value="<?= $c['id'] ?>" ><?= htmlspecialchars($c['nome']) ?></option>
             <?php
         }
         ?>
