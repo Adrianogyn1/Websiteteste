@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Estilos de Layout (MANTIDOS) */
+        /* Estilos de Layout */
         body, html { height: 100%; margin: 0; background-color: #f0f0f0; }
         .app-container { height: 100vh; display: flex; max-width: 1400px; margin: 0 auto; }
         .chat-list-column {
@@ -288,15 +288,17 @@
                 renderContactList();
             }
             
-            // Usuário (NOVO)
+            // Usuário
             function loadUsername() {
                 const storedUsername = localStorage.getItem('chatAppUsername');
                 if (storedUsername) {
                     username = storedUsername;
+                    // Verifica se o nome salvo é um dos nomes "Anônimo" gerados
                     isDefaultUsername = storedUsername.startsWith('Anônimo');
                 }
-                // Se não há nome salvo, chama a inicialização para criar um.
+                
                 if (!username) {
+                    // Se não há nome salvo, cria um novo "Anônimo"
                     initializeUsername();
                 } else {
                     $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
@@ -318,10 +320,6 @@
 
                 saveUsername(username);
                 $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
-                
-                if (socket.connected) {
-                    joinRoom('Geral');
-                }
             }
             
             function setAndSaveUsername() {
@@ -334,7 +332,7 @@
                     isDefaultUsername = false;
                     usernameChanged = true;
                 } else if (!newUsername) {
-                    // Se o campo for limpo, volta para Anônimo, a menos que já estivesse customizado.
+                    // Se o campo for limpo e não for nome padrão, regenera um Anônimo.
                     const newAnonName = `Anônimo${Math.floor(Math.random() * 1000)}`;
                     if (oldUsername !== newAnonName) {
                         username = newAnonName;
@@ -348,14 +346,15 @@
                 entryModal.hide();
                 $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
                 
+                // Força a reentrada na sala se o nome mudou, para notificar o servidor e outros clientes.
                 if (socket.connected && usernameChanged) {
-                    // O `joinRoom` cuida de sair da sala antiga e entrar na nova
                     joinRoom(currentRoom || 'Geral'); 
                 }
             }
 
             $('#saveUsernameButton').click(setAndSaveUsername);
             $('#editUsernameButton').click(function() {
+                // Preenche o input com o nome atual, ou vazio se for o nome padrão gerado.
                 $('#usernameInput').val(isDefaultUsername ? '' : username); 
                 entryModal.show();
             });
@@ -367,34 +366,45 @@
             socket.on('connect', function() {
                 updateConnectionStatus('connected');
                 
-                // Entra na última sala após reconexão ou na sala Geral
+                // Garante que o usuário tem um nome
+                if (!username) {
+                    loadUsername(); 
+                }
+                
+                // Tenta entrar na última sala (currentRoom) ou na 'Geral'
                 if (username) {
-                    const roomToJoin = currentRoom || 'Geral';
+                    const roomToJoin = currentRoom || 'Geral'; 
                     joinRoom(roomToJoin); 
                 }
+                
                 requestActiveUsers();
             });
             
-            // ... (disconnect, reconnect_attempt, connect_error - MANTIDOS)
-            socket.on('disconnect', function() { updateConnectionStatus('disconnected'); });
-            socket.on('reconnect_attempt', function() { updateConnectionStatus('connecting'); });
-            socket.on('connect_error', (err) => { 
+            socket.on('disconnect', function() {
+                updateConnectionStatus('disconnected');
+            });
+
+            socket.on('reconnect_attempt', function() {
+                updateConnectionStatus('connecting');
+            });
+            
+            socket.on('connect_error', (err) => {
                 console.error("ERRO FATAL DE CONEXÃO:", err.message);
                 updateConnectionStatus('disconnected');
             });
             
             // --- NOVO: RECEBIMENTO DE HISTÓRICO ---
             socket.on('load history', function(history) {
-                // Remove a mensagem de 'Você entrou no chat'
+                // Limpa a área antes de carregar o histórico.
                 $('#messages').empty(); 
                 
-                // Carrega o histórico (é enviado do mais antigo para o mais novo)
+                // Carrega o histórico (ordenado do mais antigo para o mais novo pelo servidor)
                 history.forEach(data => {
                     addMessage(data, data.user === username, true); // true para é histórico
                 });
                 
-                // Adiciona a mensagem de entrada após o histórico
-                $('#messages').append('<p class="message-system">Você entrou no chat: ' + $('#currentRoomDisplay').text() + '</p>');
+                // Mensagem de sistema que é adicionada APÓS o histórico (como nova mensagem)
+                $('#messages').prepend('<p class="message-system">Você entrou no chat: ' + $('#currentRoomDisplay').text() + '</p>');
 
                 // Garante que o scroll vá para o final/topo (mensagens novas)
                 $('#messages').scrollTop(0);
@@ -409,12 +419,22 @@
                 const sortedUsers = [user1, user2].sort();
                 return `DM_${sortedUsers[0]}_${sortedUsers[1]}`;
             }
-
+            
+            // Função crucial para exibir o nome do contato, e não a chave técnica
             function getDMDisplayTitle(roomName) {
                 if (!roomName.startsWith('DM_')) return roomName;
+                
+                // Filtra o prefixo 'DM' e o próprio nome do usuário logado
                 const otherUsers = roomName.split('_').filter(p => p !== 'DM' && p !== username);
+                
+                if (otherUsers.length === 0) {
+                     // Caso em que o usuário está em um DM consigo mesmo (raro, mas evita erro)
+                     return 'Chat Privado (Você)';
+                }
+                
                 return `DM: ${otherUsers.join(' & ')}`;
             }
+
 
             function joinRoom(roomName) {
                 if (!username || !socket.connected) {
@@ -431,7 +451,7 @@
                     
                     $('#currentRoomDisplay').text(displayTitle);
                     
-                    // O histórico será carregado pelo evento 'load history', não precisamos limpar o #messages aqui.
+                    // O histórico será carregado pelo evento 'load history'
                     
                     $('#m').prop('disabled', false).focus();
                     $('#sendButton').prop('disabled', false);
@@ -442,13 +462,80 @@
                 });
             }
 
-            // ... (Lógica de Modais e Formulário - MANTIDA) ...
+            // ... (Lógica de Modais, Formulário, e Funções de UI - MANTIDAS) ...
             
-            // =========================================================
-            // LÓGICA DE LISTAS E INTERAÇÃO
-            // =========================================================
+            // Eventos de Modais Aninhados (usando timeout para evitar backdrop duplo)
+            $('#openPublicRoomsButton').click(function() {
+                newChatModal.hide(); 
+                setTimeout(() => { createPublicRoomModal.show(); }, 300); 
+            });
+
+            $('#openPrivateChatButton').click(function() {
+                newChatModal.hide(); 
+                setTimeout(() => { 
+                    selectUserModal.show(); 
+                    requestActiveUsers(); 
+                }, 300);
+            });
             
-            // ... (renderContactList, requestActiveUsers - MANTIDAS, exceto a chamada getPrivateRoomName) ...
+            $('#createRoomButton').click(function() {
+                const newRoomName = $('#newRoomInput').val().trim();
+                if (newRoomName) {
+                    createPublicRoomModal.hide();
+                    joinRoom(newRoomName);
+                    $('#newRoomInput').val(''); 
+                } else {
+                    alert('Digite um nome para a nova sala.');
+                }
+            });
+
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                const messageText = $('#m').val().trim();
+                
+                if (!socket.connected || !currentRoom) {
+                    alert('Você não está conectado ou não está em uma sala.');
+                    return false;
+                }
+
+                if (messageText) {
+                    socket.emit('chat message', messageText);
+                    $('#m').val('');
+                }
+                return false;
+            });
+
+            function updateConnectionStatus(status) {
+                const indicator = $('#connectionStatusIndicator');
+                const text = $('#connectionStatusText');
+                
+                indicator.removeClass('connected disconnected connecting');
+                
+                if (status === 'connected') {
+                    indicator.addClass('connected');
+                    text.text('Conectado');
+                    text.removeClass('text-danger text-warning').addClass('text-success');
+                } else if (status === 'connecting') {
+                    indicator.addClass('connecting');
+                    text.text('Reconectando...');
+                    text.removeClass('text-success text-danger').addClass('text-warning');
+                } else { 
+                    indicator.addClass('disconnected');
+                    text.text('Desconectado');
+                    text.removeClass('text-success text-warning').addClass('text-danger');
+                }
+            }
+            
+            function openChatWindow() {
+                $('#chatWindowColumn').addClass('active-chat');
+            }
+            
+            $('#backToChats').click(function() {
+                $('#chatWindowColumn').removeClass('active-chat');
+            });
+            
+            // --- Lógica de Contatos e Usuários ---
+            
             function renderContactList() {
                 const $contactList = $('#contactList').empty();
                 const contactNames = Object.keys(contacts).sort();
@@ -504,8 +591,63 @@
                     });
                 });
             }
+            
+            // --- Menu de Contexto do Usuário (mantido) ---
+            function hideUserContextMenu() {
+                $('#userContextMenu').hide();
+                contextTargetUser = null;
+            }
 
-            // ... (Menu de Contexto do Usuário - MANTIDO) ...
+            function showUserContextMenu(event, targetUser) {
+                if (targetUser === username) {
+                    hideUserContextMenu();
+                    return;
+                }
+
+                contextTargetUser = targetUser;
+                const isContact = contacts.hasOwnProperty(targetUser);
+
+                $('#addContactButton').toggle(!isContact);
+                $('#removeContactButton').toggle(isContact);
+
+                $('#userContextMenu')
+                    .css({
+                        top: event.pageY,
+                        left: event.pageX
+                    })
+                    .show();
+            }
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown-menu-user').length && !$(e.target).hasClass('username')) {
+                    hideUserContextMenu();
+                }
+            });
+
+            $('#addContactButton').click(function() {
+                if (contextTargetUser) {
+                    contacts[contextTargetUser] = true;
+                    saveContacts();
+                    alert(`${contextTargetUser} adicionado aos contatos!`);
+                }
+                hideUserContextMenu();
+            });
+
+            $('#removeContactButton').click(function() {
+                if (contextTargetUser && contacts.hasOwnProperty(contextTargetUser)) {
+                    delete contacts[contextTargetUser];
+                    saveContacts();
+                    alert(`${contextTargetUser} removido dos contatos.`);
+                }
+                hideUserContextMenu();
+            });
+
+            $('#dmUserButton').click(function() {
+                if (contextTargetUser) {
+                    joinRoom(getPrivateRoomName(username, contextTargetUser));
+                }
+                hideUserContextMenu();
+            });
 
             // =========================================================
             // RECEBIMENTO DE DADOS
@@ -524,7 +666,6 @@
                     const isDM = room.name.startsWith('DM_');
 
                     if (isDM) {
-                        // Exibe o nome do contato, não a chave técnica
                         chatTitle = getDMDisplayTitle(room.name);
                     } else {
                         chatTitle = room.name === 'Geral' ? 'Sala Geral (Pública)' : room.name;
@@ -553,12 +694,13 @@
             });
 
             socket.on('chat message', function(data) {
+                 // Apenas mostra a mensagem se for da sala que o usuário está olhando
                  if (data.room === currentRoom || data.type === 'system') {
                     addMessage(data, data.user === username);
                 }
             });
             
-            // addMessage agora recebe um parâmetro 'isHistory' (NOVO)
+            // addMessage: Adiciona mensagem. isHistory=true se vier do histórico.
             function addMessage(data, isMine, isHistory = false) {
                 let msgElement;
                 const messagesDiv = $('#messages');
@@ -582,8 +724,8 @@
                         .append(data.msg);
                 }
                 
-                // Se for histórico, adiciona ao final (pois o histórico é ordenado do mais antigo para o mais novo)
-                // Se for mensagem em tempo real, adiciona ao topo (messagesDiv é column-reverse)
+                // Se é histórico, adiciona ao FINAL (mensagens mais antigas vão para o fim da coluna-reverse)
+                // Se é em tempo real, adiciona ao INÍCIO (mensagens mais novas vão para o topo da coluna-reverse)
                 if (isHistory) {
                     messagesDiv.append(msgElement);
                 } else {
@@ -598,7 +740,7 @@
             
             // --- INICIALIZAÇÃO FINAL ---
             loadContacts();
-            loadUsername(); // Carrega o nome do usuário salvo
+            loadUsername(); 
         });
     </script>
 </body>

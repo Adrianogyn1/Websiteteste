@@ -1,26 +1,71 @@
-// server.js (REVISADO)
+// server.js (Versão com Persistência de Histórico em Arquivo JSON)
 
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
     cors: {
-        origin: ["*", null],
+        origin: ["*", null], 
         methods: ["GET", "POST"]
     }
 });
+const fs = require('fs'); // Importa o módulo File System
 
 const PORT = 3000;
+const HISTORY_FILE = 'chat_history.json';
+const HISTORY_LIMIT = 100; // Limite de mensagens por sala/DM
 
-// --- DADOS PERSISTENTES NO SERVIDOR ---
-let rooms = { 'Geral': { count: 0, sockets: {} } }; // Salas ativas e contagem de usuários
-let userMap = {}; // Mapeia o nome do usuário para o ID do Socket
-let roomHistory = { 
-    'Geral': [] // Inicializa o histórico da sala Geral
-}; 
-const HISTORY_LIMIT = 100; // Limite de mensagens por sala
+// --- DADOS PERSISTENTES NA MEMÓRIA ---
+let rooms = { 'Geral': { count: 0, sockets: {} } }; 
+let userMap = {}; 
+let roomHistory = {}; // Será carregado do arquivo
 
-// Serve arquivos estáticos da pasta 'public'
+// --- FUNÇÕES DE PERSISTÊNCIA EM ARQUIVO ---
+
+/**
+ * Carrega o histórico do arquivo JSON ou retorna um objeto vazio se o arquivo não existir.
+ */
+function loadHistoryFromDisk() {
+    try {
+        if (fs.existsSync(HISTORY_FILE)) {
+            const data = fs.readFileSync(HISTORY_FILE, 'utf8');
+            console.log("[PERSISTÊNCIA] Histórico carregado do disco.");
+            // Garante que 'Geral' exista, mesmo que o arquivo esteja vazio
+            const loadedHistory = JSON.parse(data);
+            if (!loadedHistory['Geral']) {
+                loadedHistory['Geral'] = [];
+            }
+            return loadedHistory;
+        } else {
+            console.log("[PERSISTÊNCIA] Arquivo de histórico não encontrado. Criando novo.");
+            return { 'Geral': [] };
+        }
+    } catch (error) {
+        console.error("[ERRO PERSISTÊNCIA] Falha ao carregar histórico:", error.message);
+        return { 'Geral': [] }; // Retorna estado padrão em caso de erro
+    }
+}
+
+/**
+ * Salva o histórico atual da memória no arquivo JSON de forma assíncrona.
+ */
+function saveHistoryToDisk() {
+    try {
+        const data = JSON.stringify(roomHistory, null, 2); // null, 2 para formatação legível
+        // Usamos writeFile assíncrono para não travar o loop de eventos I/O do servidor
+        fs.writeFile(HISTORY_FILE, data, 'utf8', (err) => {
+            if (err) {
+                console.error("[ERRO PERSISTÊNCIA] Falha ao salvar histórico:", err.message);
+            }
+            // Não logamos o sucesso a cada salvamento para evitar flood de console
+        });
+    } catch (error) {
+        console.error("[ERRO PERSISTÊNCIA] Falha ao serializar histórico:", error.message);
+    }
+}
+
+
+// --- CONFIGURAÇÃO DO EXPRESS ---
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
@@ -30,24 +75,22 @@ app.get('/', (req, res) => {
 
 // --- LÓGICA DE SALAS E UTILITÁRIOS ---
 
-function getPrivateRoomName(user1, user2) {
-    const sortedUsers = [user1, user2].sort();
-    return `DM_${sortedUsers[0]}_${sortedUsers[1]}`;
-}
-
 function updateRoomList() {
-    // A lista de salas ativas deve incluir todas as salas com histórico,
-    // mesmo que estejam vazias (para persistência do DM).
     const allRooms = new Set([...Object.keys(rooms), ...Object.keys(roomHistory)]);
 
     const activeRooms = Array.from(allRooms)
         .filter(roomName => {
-            // Filtra DMs sem histórico e DMs onde o usuário é Anônimo (não precisa ser persistente).
-            if (roomName.startsWith('DM_') && (!roomHistory[roomName] || roomHistory[roomName].length === 0)) {
-                 // DMs vazias *só* são mantidas se tiverem histórico.
-                 return false;
+            const hasHistory = roomHistory[roomName] && roomHistory[roomName].length > 0;
+            const hasUsers = rooms[roomName] && rooms[roomName].count > 0;
+            const isDM = roomName.startsWith('DM_');
+
+            if (roomName === 'Geral') return true; 
+
+            if (isDM) {
+                return hasHistory || hasUsers;
             }
-            return true;
+            
+            return hasHistory || hasUsers;
         })
         .map(roomName => ({
             name: roomName,
@@ -65,39 +108,43 @@ io.on('connection', (socket) => {
 
     console.log(`[CONEXÃO] Novo usuário conectado: ${socket.id}`);
 
-
-    // --- ENTRAR NA SALA (AGORA CARREGA O HISTÓRICO) ---
+    // --- ENTRAR NA SALA ---
     socket.on('join room', (roomName, username, callback) => {
-        // 1. Validar e Sair da Sala Antiga
+        
+        // 1. Sair da Sala Antiga
         if (currentRoom) {
             socket.leave(currentRoom); 
             
             if (rooms[currentRoom]) {
-                rooms[currentRoom].count--;
-                delete rooms[currentRoom].sockets[socket.id];
-                
-                // NUNCA MAIS EXCLUIMOS A SALA AQUI. A PERSISTÊNCIA é baseada no histórico.
-            }
-            
-            // Notifica os outros sobre a saída (apenas se o chat não for DM)
-            if (!currentRoom.startsWith('DM_') && currentRoom !== 'Geral') {
-                io.to(currentRoom).emit('chat message', {
-                    user: 'Sistema', msg: `${currentUsername} saiu da sala.`, room: currentRoom, type: 'system'
-                });
+                if (rooms[currentRoom].sockets[socket.id]) {
+                    rooms[currentRoom].count--;
+                    delete rooms[currentRoom].sockets[socket.id];
+                }
+
+                if (rooms[currentRoom].count > 0 && currentRoom !== 'Geral' && !currentRoom.startsWith('DM_')) {
+                    io.to(currentRoom).emit('chat message', {
+                        user: 'Sistema', msg: `${currentUsername} saiu da sala.`, room: currentRoom, type: 'system'
+                    });
+                }
             }
         }
-        
-        // 2. Entrar na Nova Sala
+
+        // 2. Atualização do Estado do Usuário
+        if (currentUsername && currentUsername !== username) {
+             delete userMap[currentUsername]; 
+        }
+
         currentUsername = username;
         currentRoom = roomName;
         userMap[currentUsername] = socket.id; 
         
+        // 3. Entrar na Nova Sala e Atualizar Estado da Sala
         socket.join(currentRoom);
 
-        // Inicializa a sala e o histórico se não existirem
         if (!rooms[currentRoom]) {
             rooms[currentRoom] = { count: 0, sockets: {} };
         }
+        
         rooms[currentRoom].count++;
         rooms[currentRoom].sockets[socket.id] = true;
         
@@ -105,23 +152,20 @@ io.on('connection', (socket) => {
              roomHistory[currentRoom] = [];
         }
         
-        // 3. Enviar Histórico (NOVO)
+        // 4. Enviar Histórico e Notificações
         socket.emit('load history', roomHistory[currentRoom]);
-
-        // 4. Notificações e Callbacks
-        console.log(`[JOIN] ${currentUsername} (${socket.id}) entrou em: ${currentRoom}`);
 
         socket.emit('chat message', { 
             user: 'Sistema', msg: `Você entrou na sala/chat: ${currentRoom}`, room: currentRoom, type: 'system' 
         });
 
-        // Broadcast (apenas se o chat não for DM)
-        if (!currentRoom.startsWith('DM_') && currentRoom !== 'Geral') {
+        if (currentRoom !== 'Geral' && !currentRoom.startsWith('DM_')) {
             socket.to(currentRoom).emit('chat message', {
                 user: 'Sistema', msg: `${currentUsername} entrou na sala.`, room: currentRoom, type: 'system'
             });
         }
         
+        console.log(`[JOIN] ${currentUsername} (${socket.id}) entrou em: ${currentRoom}`);
         updateRoomList();
         if (callback) {
             callback(currentRoom);
@@ -129,7 +173,7 @@ io.on('connection', (socket) => {
     });
 
 
-    // --- CHAT MESSAGE (AGORA SALVA NO HISTÓRICO) ---
+    // --- CHAT MESSAGE (AGORA CHAMA saveHistoryToDisk) ---
     socket.on('chat message', (msg) => {
         if (currentRoom && currentUsername && msg.trim()) {
             const data = {
@@ -137,47 +181,50 @@ io.on('connection', (socket) => {
                 msg: msg.trim(),
                 room: currentRoom,
                 type: 'user',
-                timestamp: Date.now() // Adiciona timestamp para ordenação
+                timestamp: Date.now() 
             };
             
-            // 1. Salvar no histórico
             if (!roomHistory[currentRoom]) {
                 roomHistory[currentRoom] = [];
             }
+            
+            // 1. Adiciona e limita
             roomHistory[currentRoom].push(data);
-
-            // 2. Aplicar limite de histórico
             if (roomHistory[currentRoom].length > HISTORY_LIMIT) {
-                // Remove a mensagem mais antiga (a primeira do array)
                 roomHistory[currentRoom].shift(); 
             }
 
-            // 3. Enviar a todos na sala
+            // 2. Salva no disco após cada mensagem (garantindo persistência imediata)
+            saveHistoryToDisk(); 
+
+            // 3. Envia para o cliente
             io.to(currentRoom).emit('chat message', data);
         }
     });
     
     
-    // --- LISTA DE USUÁRIOS (mantido) ---
+    // --- LISTA DE USUÁRIOS (MANTIDO) ---
     socket.on('get active users', (callback) => {
-        const activeUsers = Object.keys(userMap).filter(user => user !== currentUsername);
+        const activeUsers = Object.keys(userMap);
         if (callback) callback(activeUsers);
     });
 
 
-    // --- DESCONEXÃO ---
+    // --- DESCONEXÃO (MANTIDO) ---
     socket.on('disconnect', () => {
-        console.log(`[DESCONEXÃO] Usuário desconectado: ${socket.id}`);
+        console.log(`[DESCONEXÃO] Usuário desconectado: ${currentUsername} (${socket.id})`);
         
-        if (currentUsername) {
+        if (currentUsername && userMap[currentUsername] === socket.id) {
             delete userMap[currentUsername];
+            console.log(`[LIMPEZA] Mapeamento de usuário removido: ${currentUsername}`);
         }
 
         if (currentRoom && rooms[currentRoom]) {
-            rooms[currentRoom].count--;
-            delete rooms[currentRoom].sockets[socket.id];
-
-            // Notifica se a sala não for DM
+            if (rooms[currentRoom].sockets[socket.id]) {
+                rooms[currentRoom].count--;
+                delete rooms[currentRoom].sockets[socket.id];
+            }
+            
             if (rooms[currentRoom].count > 0 && !currentRoom.startsWith('DM_') && currentRoom !== 'Geral') {
                 io.to(currentRoom).emit('chat message', {
                     user: 'Sistema', msg: `${currentUsername} desconectou.`, room: currentRoom, type: 'system'
@@ -189,7 +236,13 @@ io.on('connection', (socket) => {
 });
 
 
-// --- INICIALIZAÇÃO DO SERVIDOR HTTP ---
+// --- INICIALIZAÇÃO DO SERVIDOR HTTP (AGORA CARREGA O HISTÓRICO) ---
+
+// 1. Carrega o histórico para a memória antes de iniciar o servidor
+roomHistory = loadHistoryFromDisk();
+
+// 2. Inicia o servidor HTTP
 http.listen(PORT, () => {
     console.log(`Servidor Node.js rodando em http://localhost:${PORT}`);
+    console.log(`Histórico persistente será salvo em: ${HISTORY_FILE}`);
 });
