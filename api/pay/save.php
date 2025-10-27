@@ -29,7 +29,7 @@ try
     
     // Valores essenciais que devem ser obtidos do contexto (Sessão/Auth)
 
-    $userId = $_SESSION['user_id'] ?? 0; 
+    $userId = $_SESSION['id'] ?? 0; 
     $carteiraId = (new Carteira())->GetSelected($userId)->id??0;  //busca no banco
     
     // Verifica se o usuário e a carteira são válidos antes de prosseguir
