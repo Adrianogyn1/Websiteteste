@@ -2,122 +2,74 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Chat Estilo Telegram (Socket.IO)</title>
+    <title>Chat App (Socket.IO)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Estilos Base (manter os estilos do passo anterior) */
+        /* Estilos de Layout */
         body, html { height: 100%; margin: 0; background-color: #f0f0f0; }
-
-        .app-container {
-            height: 100vh;
-            display: flex;
-            max-width: 1400px; 
-            margin: 0 auto;
-        }
-
+        .app-container { height: 100vh; display: flex; max-width: 1400px; margin: 0 auto; }
         .chat-list-column {
-            width: 380px; 
-            flex-shrink: 0;
-            background-color: #ffffff;
-            border-right: 1px solid #dee2e6;
-            position: relative;
-            display: flex;
-            flex-direction: column;
+            width: 380px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #dee2e6;
+            position: relative; display: flex; flex-direction: column;
         }
-
         .chat-window-column {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f0f0; 
-            min-width: 0; 
-            transition: transform 0.3s ease;
+            flex-grow: 1; display: flex; flex-direction: column; background-color: #f0f0f0; 
+            min-width: 0; transition: transform 0.3s ease;
         }
-        
         @media (max-width: 768px) {
-            .chat-list-column {
-                width: 100%;
-                position: absolute;
-                z-index: 1000;
-            }
-            .chat-window-column {
-                width: 100%;
-                transform: translateX(100%); 
-                position: absolute;
-                z-index: 1010;
-            }
-            .chat-window-column.active-chat {
-                transform: translateX(0);
-            }
+            .chat-list-column { width: 100%; position: absolute; z-index: 1000; }
+            .chat-window-column { width: 100%; transform: translateX(100%); position: absolute; z-index: 1010; }
+            .chat-window-column.active-chat { transform: translateX(0); }
         }
         
-        #roomListContainer {
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        
-        .chat-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+        /* Estilos de Abas e Listas */
+        #contentContainer { overflow-y: auto; flex-grow: 1; }
+        .tab-content { padding: 0; flex-grow: 1; display: flex; flex-direction: column; }
+        .tab-pane { padding: 0; flex-grow: 1; overflow-y: auto; }
+        .chat-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s; }
         .chat-item:hover { background-color: #f5f5f5; }
         .chat-item.active { background-color: #c7e1ff; }
         .chat-item h6 { margin-bottom: 0; font-weight: 600; }
         .chat-item p { font-size: 0.85em; color: #666; margin: 0; }
 
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background-color: #0d6efd;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            transition: background-color 0.2s;
-        }
-
+        /* Estilos de Mensagens */
         #messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column-reverse;
+            flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column-reverse;
         }
         .message-system { color: gray; font-style: italic; text-align: center; font-size: 0.85em; margin: 5px 0;}
         .message-user { 
-            margin-bottom: 8px; 
-            padding: 8px 12px; 
-            border-radius: 12px; 
-            max-width: 70%;
-            display: inline-block;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+            margin-bottom: 8px; padding: 8px 12px; border-radius: 12px; max-width: 70%;
+            display: inline-block; box-shadow: 0 1px 1px rgba(0,0,0,0.05);
         }
         .my-message { align-self: flex-end; clear: both; background-color: #d1e7dd;}
         .other-message { align-self: flex-start; clear: both; background-color: #ffffff;}
-        .message-user .username { font-size: 0.8em; color: #6c757d; display: block; margin-bottom: 2px;}
+        .message-user .username { 
+            font-size: 0.8em; color: #6c757d; display: block; margin-bottom: 2px;
+            cursor: pointer; text-decoration: underline; 
+        }
 
+        /* Indicadores */
         .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-            transition: background-color 0.3s;
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+            margin-right: 8px; transition: background-color 0.3s;
         }
         .status-indicator.connected { background-color: #198754; }
         .status-indicator.disconnected { background-color: #dc3545; }
         .status-indicator.connecting { background-color: #ffc107; }
+
+        /* Menu de Contexto do Usuário */
+        .dropdown-menu-user {
+            position: absolute;
+            z-index: 1050;
+            background: white;
+            border: 1px solid rgba(0,0,0,.15);
+            border-radius: 0.25rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+            padding: 0.5rem 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -130,8 +82,8 @@
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label for="usernameInput" class="form-label">Seu Nome/Apelido</label>
-              <input type="text" class="form-control" id="usernameInput" placeholder="Ex: adrianogyn">
+              <label for="usernameInput" class="form-label">Seu Novo Nome/Apelido</label>
+              <input type="text" class="form-control" id="usernameInput" placeholder="Deixe em branco para Anônimo">
             </div>
           </div>
           <div class="modal-footer">
@@ -207,11 +159,24 @@
         <i class="fas fa-plus fa-lg"></i>
     </div>
     
+    <div id="userContextMenu" class="dropdown-menu-user">
+        <button id="dmUserButton" class="dropdown-item">
+            <i class="fas fa-comment-dots me-2"></i> Mensagem Privada
+        </button>
+        <button id="addContactButton" class="dropdown-item">
+            <i class="fas fa-user-plus me-2"></i> Adicionar Contato
+        </button>
+        <button id="removeContactButton" class="dropdown-item" style="display:none;">
+            <i class="fas fa-user-minus me-2"></i> Remover Contato
+        </button>
+    </div>
+
+    
     <div class="app-container">
         
         <div class="chat-list-column" id="chatListColumn">
             <nav class="navbar navbar-light bg-light border-bottom p-3 d-flex justify-content-between align-items-center flex-shrink-0">
-                <span class="navbar-brand mb-0 h1">Conversas</span>
+                <span class="navbar-brand mb-0 h1">Chat App</span>
                 
                 <div class="d-flex align-items-center me-2" title="Status da Conexão">
                     <span id="connectionStatusIndicator" class="status-indicator disconnected"></span>
@@ -222,11 +187,34 @@
                     <i class="fas fa-user-edit"></i>
                 </button>
             </nav>
-            <div id="roomListContainer">
-                <div class="list-group list-group-flush" id="roomList">
-                    <div class="p-3 text-center text-muted">Defina seu nome para carregar as conversas.</div>
+            
+            <ul class="nav nav-tabs nav-fill flex-shrink-0" id="chatTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="chats-tab" data-bs-toggle="tab" data-bs-target="#chats-pane" type="button" role="tab" aria-controls="chats-pane" aria-selected="true">
+                        <i class="fas fa-comment-dots me-1"></i> Chats
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts-pane" type="button" role="tab" aria-controls="contacts-pane" aria-selected="false">
+                        <i class="fas fa-address-book me-1"></i> Contatos
+                    </button>
+                </li>
+            </ul>
+
+            <div id="contentContainer" class="tab-content">
+                <div class="tab-pane fade show active" id="chats-pane" role="tabpanel" aria-labelledby="chats-tab">
+                    <div class="list-group list-group-flush" id="roomList">
+                         <div class="p-3 text-center text-muted">Aguardando conexão com o servidor.</div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="contacts-pane" role="tabpanel" aria-labelledby="contacts-tab">
+                    <div class="list-group list-group-flush" id="contactList">
+                        <div class="p-3 text-center text-muted">Sua lista de contatos está vazia.</div>
+                    </div>
                 </div>
             </div>
+            
         </div>
 
         <div class="chat-window-column" id="chatWindowColumn">
@@ -257,34 +245,95 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 
     <script>
         $(function () {
             // =========================================================
-            // CONFIGURAÇÃO E INICIALIZAÇÃO
+            // CONFIGURAÇÃO E VARIÁVEIS
             // =========================================================
-            // Lembre-se de mudar este IP para o IP do seu servidor VM!
+            // *** MUDAR ESTE IP PARA O ENDEREÇO DO SEU SERVIDOR NODE.JS ***
             const SERVER_URL = 'http://35.209.27.45:3000'; 
             
             const socket = io(SERVER_URL); 
 
-            let username = '';
+            let username = ''; 
             let currentRoom = '';
             let isDefaultUsername = false; 
+            let contacts = {}; 
+            let contextTargetUser = null; 
             
-            // Instâncias dos Modais
+            // Instâncias dos Modais Bootstrap
             const entryModal = new bootstrap.Modal(document.getElementById('entryModal'));
             const newChatModal = new bootstrap.Modal(document.getElementById('newChatModal'));
             const createPublicRoomModal = new bootstrap.Modal(document.getElementById('createPublicRoomModal'));
-            const selectUserModal = new bootstrap.Modal(document.getElementById('selectUserModal')); // NOVO
+            const selectUserModal = new bootstrap.Modal(document.getElementById('selectUserModal')); 
+            
+            // =========================================================
+            // LÓGICA DE CONTATOS (LocalStorage)
+            // =========================================================
+            function loadContacts() {
+                const storedContacts = localStorage.getItem('chatAppContacts');
+                if (storedContacts) {
+                    contacts = JSON.parse(storedContacts);
+                }
+                renderContactList();
+            }
 
-            entryModal.show();
+            function saveContacts() {
+                localStorage.setItem('chatAppContacts', JSON.stringify(contacts));
+                renderContactList();
+            }
 
             // =========================================================
-            // FUNÇÕES DE STATUS E INTERFACE
+            // LÓGICA DO NOME DE USUÁRIO
+            // =========================================================
+            
+            function initializeUsername() {
+                const initialUsername = `Anônimo${Math.floor(Math.random() * 1000)}`;
+                
+                username = initialUsername;
+                isDefaultUsername = true;
+
+                $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
+                
+                if (socket.connected) {
+                    joinRoom('Geral');
+                }
+            }
+            
+            function setAndSaveUsername() {
+                let oldUsername = username;
+                let newUsername = $('#usernameInput').val().trim();
+                
+                if (newUsername && newUsername !== oldUsername) {
+                    username = newUsername;
+                    isDefaultUsername = false;
+                } else if (newUsername === '') {
+                    // Se o campo for limpo, volta para Anônimo, a menos que já estivesse customizado.
+                    username = `Anônimo${Math.floor(Math.random() * 1000)}`;
+                    isDefaultUsername = true;
+                }
+                // Se o nome não mudou, simplesmente fecha.
+
+                entryModal.hide();
+                $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
+                
+                if (socket.connected && oldUsername !== username) {
+                    joinRoom(currentRoom || 'Geral'); 
+                }
+            }
+
+            $('#saveUsernameButton').click(setAndSaveUsername);
+            $('#editUsernameButton').click(function() {
+                $('#usernameInput').val(isDefaultUsername ? '' : username); 
+                entryModal.show();
+            });
+
+            // =========================================================
+            // FUNÇÕES GERAIS DE INTERFACE E CONEXÃO
             // =========================================================
 
             function updateConnectionStatus(status) {
@@ -316,13 +365,12 @@
                 $('#chatWindowColumn').removeClass('active-chat');
             });
 
-            // Modais Aninhados
+            // Eventos de Modais Aninhados (usando timeout para evitar backdrop duplo)
             $('#openPublicRoomsButton').click(function() {
                 newChatModal.hide(); 
                 setTimeout(() => { createPublicRoomModal.show(); }, 300); 
             });
 
-            // NOVO: Abrir modal de seleção de usuário
             $('#openPrivateChatButton').click(function() {
                 newChatModal.hide(); 
                 setTimeout(() => { 
@@ -330,22 +378,21 @@
                     requestActiveUsers(); 
                 }, 300);
             });
-
-
+            
             // =========================================================
-            // LÓGICA DE USUÁRIO E CONEXÃO (Socket.IO)
+            // SOCKET.IO: EVENTOS DO SISTEMA
             // =========================================================
 
-            // --- EVENTOS DE CONEXÃO ---
             socket.on('connect', function() {
                 updateConnectionStatus('connected');
-                if (username) {
-                    // Após reconectar, tenta entrar na sala atual ou 'Geral'
+                if (!username) {
+                    // Se a conexão for a primeira ou o nome for perdido
+                    initializeUsername(); 
+                } else {
                     const roomToJoin = currentRoom || 'Geral';
                     joinRoom(roomToJoin); 
-                } else {
-                    entryModal.show(); // Força a definição do nome se for a primeira conexão
                 }
+                requestActiveUsers();
             });
             
             socket.on('disconnect', function() {
@@ -361,45 +408,18 @@
                 updateConnectionStatus('disconnected');
             });
 
-            // --- 1. Definir/Salvar Usuário ---
-            function setAndSaveUsername() {
-                let oldUsername = username;
-                let newUsername = $('#usernameInput').val().trim();
-                
-                if (newUsername) {
-                    username = newUsername;
-                    isDefaultUsername = false;
-                } else {
-                    username = `Anônimo${Math.floor(Math.random() * 1000)}`;
-                    isDefaultUsername = true;
-                }
+            // =========================================================
+            // LÓGICA PRINCIPAL DO CHAT
+            // =========================================================
 
-                entryModal.hide();
-                $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
-                
-                if (socket.connected) {
-                    // Entra na sala 'Geral' (padrão) ou na sala anterior se mudou o nome
-                    joinRoom(currentRoom || 'Geral'); 
-                }
+            function getPrivateRoomName(user1, user2) {
+                const sortedUsers = [user1, user2].sort();
+                return `DM_${sortedUsers[0]}_${sortedUsers[1]}`;
             }
 
-            $('#saveUsernameButton').click(setAndSaveUsername);
-            $('#editUsernameButton').click(function() {
-                $('#usernameInput').val(isDefaultUsername ? '' : username); 
-                entryModal.show();
-            });
-
-
-            // --- 2. Entrar em uma Sala (Chat) ---
             function joinRoom(roomName) {
-                if (!username) {
-                    alert('Defina seu nome de usuário primeiro.');
-                    entryModal.show();
-                    return;
-                }
-                
-                if (!socket.connected) {
-                    alert('Você está desconectado. Aguarde a conexão com o servidor...');
+                if (!username || !socket.connected) {
+                    alert('Conecte-se e defina seu nome primeiro.');
                     return;
                 }
                 
@@ -408,9 +428,8 @@
                     
                     let displayTitle;
                     if (roomJoined.startsWith('DM_')) {
-                        // Exibe o nome do outro usuário no DM
-                        const parts = roomJoined.split('_').filter(p => p !== 'DM' && p !== username);
-                        displayTitle = `Chat com ${parts.join(' & ')}`;
+                        const otherUsers = roomJoined.split('_').filter(p => p !== 'DM' && p !== username);
+                        displayTitle = `Chat com ${otherUsers.join(' & ')}`;
                     } else if (roomJoined === 'Geral') {
                         displayTitle = 'Sala Geral (Pública)';
                     } else {
@@ -430,7 +449,6 @@
                 });
             }
 
-            // --- 3. Criar Nova Sala (Ação do Modal Público) ---
             $('#createRoomButton').click(function() {
                 const newRoomName = $('#newRoomInput').val().trim();
                 if (newRoomName) {
@@ -442,7 +460,6 @@
                 }
             });
 
-            // --- 4. Lógica de Envio de Mensagem ---
             $('#form').submit(function(e) {
                 e.preventDefault();
                 const messageText = $('#m').val().trim();
@@ -453,7 +470,6 @@
                 }
 
                 if (messageText) {
-                    // O servidor enviará de volta a mensagem, então o cliente só limpa o input.
                     socket.emit('chat message', messageText);
                     $('#m').val('');
                 }
@@ -461,53 +477,135 @@
             });
 
             // =========================================================
-            // LÓGICA DE CHAT PRIVADO (DM)
+            // LÓGICA DE LISTAS E INTERAÇÃO
             // =========================================================
+            
+            function renderContactList() {
+                const $contactList = $('#contactList').empty();
+                const contactNames = Object.keys(contacts).sort();
+
+                if (contactNames.length === 0) {
+                    $contactList.append('<div class="p-3 text-center text-muted">Sua lista de contatos está vazia.</div>');
+                    return;
+                }
+
+                contactNames.forEach(contactName => {
+                    const $item = $('<div>')
+                        .addClass('chat-item')
+                        .html(`
+                            <h6>${contactName}</h6>
+                            <p><i class="fas fa-comment-dots me-1"></i> Clique para iniciar DM</p>
+                        `);
+                    
+                    $item.click(function() {
+                        joinRoom(getPrivateRoomName(username, contactName));
+                    });
+
+                    $contactList.append($item);
+                });
+            }
 
             function requestActiveUsers() {
+                // Solicita a lista de usuários online (para o modal de DM)
                 $('#activeUsersList').empty().append('<a href="#" class="list-group-item text-center text-muted">Carregando usuários...</a>');
                 $('#noUsersMessage').hide();
 
                 socket.emit('get active users', (users) => {
                     const $usersList = $('#activeUsersList').empty();
+                    const filteredUsers = users.filter(u => u !== username);
                     
-                    if (!users || users.length === 0) {
+                    if (!filteredUsers || filteredUsers.length === 0) {
                         $('#noUsersMessage').show();
                         return;
                     }
 
-                    users.forEach(targetUser => {
-                        if (targetUser === username) return; // Não se lista
-
+                    filteredUsers.forEach(targetUser => {
+                        const isContact = contacts.hasOwnProperty(targetUser);
+                        const contactIcon = isContact ? '<i class="fas fa-address-book text-success me-1"></i>' : '';
+                        
                         const $item = $('<a>')
                             .addClass('list-group-item list-group-item-action')
                             .attr('href', '#')
-                            .text(targetUser)
+                            .html(`${contactIcon} ${targetUser}`)
                             .click(function(e) {
                                 e.preventDefault();
                                 selectUserModal.hide();
-                                joinRoom(getPrivateRoomName(username, targetUser)); // Entra na sala DM
+                                joinRoom(getPrivateRoomName(username, targetUser));
                             });
                         $usersList.append($item);
                     });
                 });
             }
             
-            // Função auxiliar para gerar o nome da sala DM (igual ao servidor)
-            function getPrivateRoomName(user1, user2) {
-                const sortedUsers = [user1, user2].sort();
-                return `DM_${sortedUsers[0]}_${sortedUsers[1]}`;
+            // --- Menu de Contexto do Usuário ---
+            function hideUserContextMenu() {
+                $('#userContextMenu').hide();
+                contextTargetUser = null;
             }
 
+            function showUserContextMenu(event, targetUser) {
+                if (targetUser === username) {
+                    hideUserContextMenu();
+                    return;
+                }
+
+                contextTargetUser = targetUser;
+                const isContact = contacts.hasOwnProperty(targetUser);
+
+                $('#addContactButton').toggle(!isContact);
+                $('#removeContactButton').toggle(isContact);
+
+                // Posiciona e exibe o menu
+                $('#userContextMenu')
+                    .css({
+                        top: event.pageY,
+                        left: event.pageX
+                    })
+                    .show();
+            }
+
+            // Evento global para fechar o menu ao clicar fora
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown-menu-user').length && !$(e.target).hasClass('username')) {
+                    hideUserContextMenu();
+                }
+            });
+
+            // Ações do Menu de Contexto (Adicionar/Remover Contato, DM)
+            $('#addContactButton').click(function() {
+                if (contextTargetUser) {
+                    contacts[contextTargetUser] = true;
+                    saveContacts();
+                    alert(`${contextTargetUser} adicionado aos contatos!`);
+                }
+                hideUserContextMenu();
+            });
+
+            $('#removeContactButton').click(function() {
+                if (contextTargetUser && contacts.hasOwnProperty(contextTargetUser)) {
+                    delete contacts[contextTargetUser];
+                    saveContacts();
+                    alert(`${contextTargetUser} removido dos contatos.`);
+                }
+                hideUserContextMenu();
+            });
+
+            $('#dmUserButton').click(function() {
+                if (contextTargetUser) {
+                    joinRoom(getPrivateRoomName(username, contextTargetUser));
+                }
+                hideUserContextMenu();
+            });
+
             // =========================================================
-            // LÓGICA DE RECEBIMENTO DE DADOS
+            // RECEBIMENTO DE DADOS
             // =========================================================
 
             socket.on('room list update', function(rooms) {
                 const $roomList = $('#roomList').empty();
                 
                 if (!username) {
-                    $roomList.append('<div class="p-3 text-center text-muted">Defina seu nome para carregar as conversas.</div>');
+                    $roomList.append('<div class="p-3 text-center text-muted">Aguardando conexão...</div>');
                     return;
                 }
 
@@ -516,13 +614,10 @@
                     const isDM = room.name.startsWith('DM_');
 
                     if (isDM) {
-                        // Filtra o próprio nome para exibir apenas o nome do outro usuário
                         const otherUsers = room.name.split('_').filter(p => p !== 'DM' && p !== username);
                         chatTitle = `DM: ${otherUsers.join(' & ')}`;
                     } else {
-                        chatTitle = room.name === 'Geral' 
-                                      ? 'Sala Geral (Pública)' 
-                                      : room.name;
+                        chatTitle = room.name === 'Geral' ? 'Sala Geral (Pública)' : room.name;
                     }
                     
                     const lastMessagePreview = `${room.count} usuário(s) ativo(s)`;
@@ -547,10 +642,8 @@
                 });
             });
 
-
             socket.on('chat message', function(data) {
-                // Apenas exibe a mensagem se for para a sala atual ou se for uma mensagem de sistema
-                if (data.room === currentRoom || data.type === 'system') {
+                 if (data.room === currentRoom || data.type === 'system') {
                     addMessage(data, data.user === username);
                 }
             });
@@ -564,15 +657,28 @@
                 } else {
                     const userClass = isMine ? 'my-message' : 'other-message';
                     
+                    const $usernameSpan = $('<span>')
+                        .addClass('username')
+                        .text(data.user + ': ')
+                        .attr('data-user', data.user)
+                        .click(function(e) {
+                            showUserContextMenu(e, data.user); 
+                        });
+                        
                     msgElement = $('<div>')
                         .addClass('message-user ' + userClass)
-                        .append(isMine ? '' : $('<span>').addClass('username').text(data.user + ': '))
+                        .append(isMine ? '' : $usernameSpan)
                         .append(data.msg);
                 }
 
                 messagesDiv.prepend(msgElement);
                 messagesDiv.scrollTop(0);
             }
+            
+            // --- INICIALIZAÇÃO ---
+            loadContacts();
+            // A inicialização do usuário (initializeUsername) é agora chamada dentro de socket.on('connect')
+            // para garantir que a conexão comece a ser estabelecida primeiro.
         });
     </script>
 </body>
