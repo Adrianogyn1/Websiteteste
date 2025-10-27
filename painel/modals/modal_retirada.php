@@ -27,13 +27,26 @@
                     */
                     ?>
 
+                    
+                    
                     <div class="mb-3">
-                        <label for="retiradaValorPadrao" class="form-label">Valor  de Retirada</label>
+                        <label for="retiradaValorPadrao" class="form-label">Valor Padrão de Retirada</label>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
-                            <input type="number" class="form-control" id="retiradaValorPadrao" min=".01" value="100000.00" required>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="retiradaValorPadrao" 
+                                name="valor" 
+                                min="0.01" 
+                                max="100000.00" 
+                                value="100.00" 
+                                step="0.01"
+                                required
+                            >
                         </div>
                     </div>
+                    
                 </form>
             </div>
             <div class="modal-footer">

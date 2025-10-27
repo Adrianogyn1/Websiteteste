@@ -148,12 +148,11 @@ $(document).ready(function ()
 
         $submitButton.prop('disabled', true).text('Processando...');
 
-        const valorSaque = parseFloat($form.find('input[name="valor"]').val()) || 0;
+        const valorSaque = parseFloat($form.find('#retiradaValorPadrao').val()) || 0;
         
         const formData = {
-            playerId: 123, 
-            carteiraId: 5, 
-            valor: valorSaque,
+            
+            valor: -Math.abs(valorSaque),
             type: 1, //  TransasaoType::Saque
             
             // Valores de Exemplo para a classe PaymanetHistorico
@@ -162,8 +161,8 @@ $(document).ready(function ()
             tempo: 0,
             
             // Campos adicionais do formulário
-            metodo: $form.find('select[name="metodoSaque"]').val(),
-            chave: $form.find('input[name="chaveSaque"]').val()
+          //  metodo: $form.find('select[name="metodoSaque"]').val(),
+            //chave: $form.find('input[name="chaveSaque"]').val()
         };
 
         $.ajax({

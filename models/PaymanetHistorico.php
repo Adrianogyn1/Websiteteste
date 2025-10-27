@@ -121,9 +121,10 @@ class PaymanetHistorico
         // Se a inserção foi bem-sucedida, obtém o ID
         if ($success) {
             $this->id = (int)$this->db->getPdo()->lastInsertId();
+       return true;
         }
         
-        return $success;
+        return $success;//vários retorno?
     }
 
     // --- UPDATE (U) ---

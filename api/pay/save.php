@@ -85,11 +85,11 @@ try
 
 
     // --- 6. VALIDAÇÃO E SALVAMENTO ---
-    if ($valor <= 0) {
+   /* if ($valor <= 0) {
         $msg = new ApiMessage(false, 'O valor da transação deve ser positivo.');
         $msg->toJson();
         exit();
-    }
+    }*/
 
     $success = $transacao->save();
 
