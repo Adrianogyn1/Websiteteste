@@ -24,8 +24,10 @@
             background-color: #ffffff;
             border-right: 1px solid #dee2e6;
             position: relative;
+            display: flex; /* Adicionado para layout flexível */
+            flex-direction: column; /* Adicionado para layout flexível */
         }
-        
+
         /* Coluna da Área de Mensagens (Varia de tamanho) */
         .chat-window-column {
             flex-grow: 1;
@@ -52,12 +54,14 @@
             .chat-window-column.active-chat {
                 transform: translateX(0);
             }
-            .chat-list-column:not(.hidden) {
-                 width: 100%;
-            }
         }
         
         /* Estilos de Chats/Mensagens */
+        #roomListContainer {
+            overflow-y: auto;
+            flex-grow: 1; /* Permite que a lista de salas preencha o espaço */
+        }
+        
         .chat-item {
             padding: 15px;
             border-bottom: 1px solid #eee;
@@ -227,7 +231,7 @@
     <div class="app-container">
         
         <div class="chat-list-column" id="chatListColumn">
-            <nav class="navbar navbar-light bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
+            <nav class="navbar navbar-light bg-light border-bottom p-3 d-flex justify-content-between align-items-center flex-shrink-0">
                 <span class="navbar-brand mb-0 h1">Conversas</span>
                 
                 <div class="d-flex align-items-center me-2" title="Status da Conexão">
@@ -239,7 +243,7 @@
                     <i class="fas fa-user-edit"></i>
                 </button>
             </nav>
-            <div id="chatListContainer" style="overflow-y: auto; height: calc(100% - 66px);">
+            <div id="roomListContainer">
                 <div class="list-group list-group-flush" id="roomList">
                     <div class="p-3 text-center text-muted">Defina seu nome para carregar as conversas.</div>
                 </div>
@@ -276,15 +280,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 
     <script>
+        // Use o DOM ready para garantir que todos os elementos HTML (como #connectionStatusIndicator) existam
         $(function () {
             // =========================================================
             // CONFIGURAÇÃO E INICIALIZAÇÃO
             // =========================================================
+            // A URL do seu servidor VM/Host
             const SERVER_URL = 'http://35.209.27.45:3000'; 
-            const socket = io(SERVER_URL);
+            
+            // 1. INICIALIZAÇÃO DO SOCKET.IO CLIENT
+            const socket = io(SERVER_URL); // Conexão com o servidor
 
             let username = '';
             let currentRoom = '';
@@ -323,6 +331,7 @@
                 }
             }
             
+            // EVENTOS DE CONEXÃO
             socket.on('connect', function() {
                 console.log('Socket.IO conectado!');
                 updateConnectionStatus('connected');
@@ -344,8 +353,14 @@
                 updateConnectionStatus('connecting');
             });
             
-            // Define o status inicial como desconectado
-            updateConnectionStatus('disconnected');
+            socket.on('connect_error', (err) => {
+                console.error("ERRO FATAL DE CONEXÃO (Verifique CORS/URL):", err.message);
+                updateConnectionStatus('disconnected');
+                $('#messages').append('<p class="message-system" style="color: red;">Erro de conexão com o servidor. Verifique o console (F12).</p>');
+            });
+
+            // Define o status inicial
+            updateConnectionStatus('connecting'); // Inicialmente, está tentando conectar
 
             // =========================================================
             // LÓGICA DE INTERFACE
@@ -359,13 +374,11 @@
                 $('#chatWindowColumn').removeClass('active-chat');
             });
             
-            // SOLUÇÃO PARA MODAIS ANINHADOS: Usar setTimeout
+            // Solução para Modais Aninhados
             $('#openPublicRoomsButton').click(function() {
-                newChatModal.hide(); // Esconde o modal de seleção (Pai)
-                
-                // Aguarda o fechamento completo do modal antes de abrir o próximo
+                newChatModal.hide(); 
                 setTimeout(() => {
-                    createPublicRoomModal.show(); // Mostra o modal de criação (Filho)
+                    createPublicRoomModal.show();
                 }, 300); 
             });
 
@@ -389,7 +402,6 @@
                 entryModal.hide();
                 $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
                 
-                // Entra na sala Geral se for a primeira vez, ou re-entra na sala atual se o nome mudou
                 if (socket.connected) {
                     if (currentRoom === '') {
                         joinRoom('Geral'); 
@@ -414,7 +426,7 @@
                 }
                 
                 if (!socket.connected) {
-                    alert('Aguarde a conexão com o servidor...');
+                    alert('Você está desconectado. Aguarde a conexão com o servidor...');
                     return;
                 }
                 
@@ -422,7 +434,6 @@
                     currentRoom = roomJoined;
                     
                     let displayTitle;
-                    // Lógica para definir o nome de exibição (Sala ou Destinatário Simulado)
                     if (roomJoined.startsWith('DM_')) {
                         const parts = roomJoined.split('_');
                         displayTitle = parts[1] === username ? parts[2] : parts[1];
@@ -438,9 +449,8 @@
                     $('#messages').empty(); 
                     $('#messages').append('<p class="message-system">Você entrou no chat: ' + displayTitle + '</p>');
                     
-                    $('#m').prop('disabled', false);
+                    $('#m').prop('disabled', false).focus();
                     $('#sendButton').prop('disabled', false);
-                    $('#m').focus();
 
                     $('.chat-item').removeClass('active');
                     $(`#roomList .chat-item[data-room='${roomJoined}']`).addClass('active');
@@ -485,7 +495,6 @@
             socket.on('room list update', function(rooms) {
                 const $roomList = $('#roomList').empty();
                 
-                // Garante a entrada na sala Geral após o nome ser definido
                 if (username && currentRoom === '') {
                      joinRoom('Geral');
                 }
@@ -556,12 +565,6 @@
 
                 messagesDiv.scrollTop(0);
             }
-            
-            socket.on('connect_error', (err) => {
-                console.error("Erro de conexão:", err.message);
-                updateConnectionStatus('disconnected');
-                $('#messages').append('<p class="message-system" style="color: red;">Erro de conexão com o servidor. Tente recarregar a página.</p>');
-            });
         });
     </script>
 </body>

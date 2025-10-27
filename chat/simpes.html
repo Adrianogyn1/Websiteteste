@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Conexão Socket.IO</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        #status-display { 
+            font-size: 2em; 
+            font-weight: bold; 
+            padding: 20px; 
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .connecting { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+
+    <h1>Status da Conexão ao Servidor</h1>
+    
+    <div id="status-display" class="disconnected">DESCONECTADO</div>
+
+    <p>URL do Servidor: <code id="server-url">http://35.209.27.45:3000</code></p>
+    <p>Verifique o Console do Desenvolvedor (F12) para erros de CORS.</p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <script>
+        const SERVER_URL = 'http://35.209.27.45:3000'; 
+        
+        // Conecta ao servidor remoto
+        const socket = io(SERVER_URL);
+        
+        const statusDisplay = document.getElementById('status-display');
+
+        function updateStatus(className, text) {
+            statusDisplay.className = '';
+            statusDisplay.classList.add(className);
+            statusDisplay.textContent = text;
+            console.log(`[STATUS] Mudou para: ${text}`);
+        }
+
+        // 1. Evento de Conexão Bem-Sucedida
+        socket.on('connect', function() {
+            updateStatus('connected', 'CONECTADO!');
+            console.log('ID do Socket: ' + socket.id);
+        });
+
+        // 2. Evento de Desconexão
+        socket.on('disconnect', function(reason) {
+            updateStatus('disconnected', `DESCONECTADO: ${reason}`);
+        });
+
+        // 3. Evento de Tentativa de Reconexão
+        socket.on('reconnect_attempt', function() {
+            updateStatus('connecting', 'RECONECTANDO...');
+        });
+
+        // 4. Evento de Erro de Conexão (o mais importante para diagnosticar)
+        socket.on('connect_error', (err) => {
+            updateStatus('disconnected', 'ERRO DE CONEXÃO');
+            console.error("Erro detalhado do Socket.IO:", err);
+            console.warn("Verifique se o seu HTML está sendo servido via HTTP (e não file://).");
+        });
+        
+        // Status inicial
+        updateStatus('disconnected', 'INICIANDO CONEXÃO...');
+    </script>
+</body>
+</html>
