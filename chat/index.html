@@ -2,22 +2,142 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Chat com Salas (Node.js + Socket.IO)</title>
+    <title>Chat Estilo Telegram (Socket.IO)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        body, html { height: 100%; margin: 0; }
-        .chat-container { height: calc(100vh - 56px); display: flex; flex-direction: column; }
-        #messages { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            border: 1px solid #ccc;
-            background-color: #f8f9fa;
+        body, html { height: 100%; margin: 0; background-color: #f0f0f0; }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            max-width: 1400px; 
+            margin: 0 auto;
         }
-        .message-system { color: gray; font-style: italic; text-align: center; }
-        .message-user { margin-bottom: 5px; padding: 5px 10px; border-radius: 10px; }
-        .my-message { background-color: #d1e7dd; text-align: right; }
-        .other-message { background-color: #fff; text-align: left; }
+
+        /* Coluna da Lista de Chats (Conversas) */
+        .chat-list-column {
+            width: 380px; 
+            flex-shrink: 0;
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            position: relative;
+        }
+        
+        /* Coluna da Área de Mensagens (Varia de tamanho) */
+        .chat-window-column {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0; 
+            /* Começa escondida no mobile e com uma largura base no desktop */
+            min-width: 0; 
+            transition: transform 0.3s ease;
+        }
+        
+        /* Esconder/Mostrar no Mobile */
+        @media (max-width: 768px) {
+            .chat-list-column {
+                width: 100%;
+                position: absolute;
+                z-index: 1000;
+                /* Estado inicial: visível */
+            }
+            .chat-window-column {
+                width: 100%;
+                /* Estado inicial: escondida */
+                transform: translateX(100%); 
+                position: absolute;
+                z-index: 1010;
+            }
+            .chat-window-column.active-chat {
+                /* Chat ativo no mobile: desliza para a frente */
+                transform: translateX(0);
+            }
+            /* A lista de chats deve estar sempre em 100% no mobile */
+            .chat-list-column:not(.hidden) {
+                 width: 100%;
+            }
+        }
+        
+        /* Estilos de Chats/Mensagens (Mantidos) */
+        .chat-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-item:hover {
+            background-color: #f5f5f5;
+        }
+        .chat-item.active {
+            background-color: #c7e1ff;
+        }
+        .chat-item h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        .chat-item p {
+            font-size: 0.85em;
+            color: #666;
+            margin: 0;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.2s;
+        }
+        .fab:hover {
+            background-color: #0b5ed7;
+        }
+
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .message-system { 
+            color: gray; 
+            font-style: italic; 
+            text-align: center; 
+            font-size: 0.85em; 
+            margin: 5px 0;
+        }
+        .message-user { 
+            margin-bottom: 8px; 
+            padding: 8px 12px; 
+            border-radius: 12px; 
+            max-width: 70%;
+            display: inline-block;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+        .my-message { 
+            background-color: #d1e7dd; 
+            align-self: flex-end; 
+            clear: both;
+        }
+        .other-message { 
+            background-color: #ffffff; 
+            align-self: flex-start; 
+            clear: both;
+        }
+        .message-user .username { font-size: 0.8em; color: #6c757d; display: block; margin-bottom: 2px;}
     </style>
 </head>
 <body>
@@ -26,45 +146,109 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="entryModalLabel">Entrar no Chat</h5>
+            <h5 class="modal-title" id="entryModalLabel">Definir/Editar Nome de Usuário</h5>
           </div>
           <div class="modal-body">
             <div class="mb-3">
               <label for="usernameInput" class="form-label">Seu Nome/Apelido</label>
-              <input type="text" class="form-control" id="usernameInput" placeholder="Ex: Joãozinho">
-            </div>
-            <div class="mb-3">
-              <label for="roomInput" class="form-label">Nome da Sala</label>
-              <input type="text" class="form-control" id="roomInput" placeholder="Ex: Geral ou Projeto_X">
+              <input type="text" class="form-control" id="usernameInput" placeholder="Ex: adrianogyn">
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="joinButton">Entrar</button>
+            <button type="button" class="btn btn-primary" id="saveUsernameButton">Salvar Nome</button>
           </div>
         </div>
       </div>
     </div>
     
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <span class="navbar-brand">Chat (Telegram-like)</span>
-            <span class="navbar-text" id="currentRoomDisplay">
-                Sala: Nenhuma
-            </span>
-        </div>
-    </nav>
-
-    <div class="container-fluid chat-container">
-        <div id="messages" class="mt-3 mb-3">
-            <p class="message-system">Aguardando sua entrada em uma sala...</p>
-        </div>
-
-        <form id="form" class="mb-3">
-            <div class="input-group">
-                <input id="m" autocomplete="off" class="form-control" placeholder="Digite sua mensagem..." disabled/>
-                <button type="submit" class="btn btn-success" id="sendButton" disabled>Enviar</button>
+    <div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="newChatModalLabel">Iniciar Nova Conversa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <label class="form-label">Tipo de Conversa</label>
+            <div class="mb-3">
+                <button class="btn btn-outline-primary w-100 mb-2" id="openPublicRoomsModal">
+                    <i class="fas fa-users me-2"></i> Criar/Entrar em Sala Pública
+                </button>
+                <button class="btn btn-outline-success w-100" id="openPrivateChatModal" disabled>
+                     <i class="fas fa-user me-2"></i> Iniciar Chat Pessoal (DM) - *Funcionalidade Desabilitada*
+                </button>
             </div>
-        </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="createPublicRoomModal" tabindex="-1" aria-labelledby="createPublicRoomModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="createPublicRoomModalLabel">Criar Nova Sala Pública</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="newRoomInput" class="form-label">Nome da Nova Sala</label>
+              <input type="text" class="form-control" id="newRoomInput" placeholder="Ex: Developers BR">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="createRoomButton">Criar e Entrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fab" data-bs-toggle="modal" data-bs-target="#newChatModal" title="Nova Conversa/Sala">
+        <i class="fas fa-plus fa-lg"></i>
+    </div>
+    
+    <div class="app-container">
+        
+        <div class="chat-list-column" id="chatListColumn">
+            <nav class="navbar navbar-light bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
+                <span class="navbar-brand mb-0 h1">Conversas</span>
+                <button class="btn btn-sm btn-outline-secondary" id="editUsernameButton" title="Editar Nome">
+                    <i class="fas fa-user-edit"></i>
+                </button>
+            </nav>
+            <div id="chatListContainer" style="overflow-y: auto; height: calc(100% - 66px);">
+                <div class="list-group list-group-flush" id="roomList">
+                    <div class="p-3 text-center text-muted">Defina seu nome para carregar as conversas.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-window-column" id="chatWindowColumn">
+            <nav class="navbar navbar-dark bg-primary p-3 flex-shrink-0">
+                <div class="container-fluid">
+                    <button class="btn btn-sm btn-light d-md-none me-3" id="backToChats">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="navbar-brand mb-0 h3" id="currentRoomDisplay">
+                        Selecione um Chat
+                    </span>
+                    <span class="navbar-text text-white ms-auto" id="userInfoDisplay">
+                        Usuário: N/A
+                    </span>
+                </div>
+            </nav>
+
+            <div id="messages" class="flex-grow-1">
+                 <p class="message-system" id="initialMessage">Inicie ou selecione um chat na lateral.</p>
+            </div>
+            
+            <form id="form" class="p-3 border-top flex-shrink-0 bg-white">
+                <div class="input-group">
+                    <input id="m" autocomplete="off" class="form-control" placeholder="Digite sua mensagem..." disabled/>
+                    <button type="submit" class="btn btn-primary" id="sendButton" disabled>Enviar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -74,91 +258,230 @@
     <script>
         $(function () {
             // =========================================================
-            // AQUI ESTÁ A CORREÇÃO PARA USAR O ENDEREÇO IP ESPECÍFICO
+            // CONFIGURAÇÃO
             // =========================================================
             const SERVER_URL = 'http://35.209.27.45:3000'; 
             const socket = io(SERVER_URL);
-            // =========================================================
 
             let username = '';
             let currentRoom = '';
+            let isDefaultUsername = false; 
             
+            // Instâncias dos Modais
             const entryModal = new bootstrap.Modal(document.getElementById('entryModal'));
+            const newChatModal = new bootstrap.Modal(document.getElementById('newChatModal'));
+            const createPublicRoomModal = new bootstrap.Modal(document.getElementById('createPublicRoomModal'));
+            
+            // Exibe o modal de nome de usuário automaticamente
             entryModal.show();
 
-            // Lógica de ENTRAR na Sala
-            $('#joinButton').click(function() {
-                username = $('#usernameInput').val().trim();
-                const roomName = $('#roomInput').val().trim();
+            // =========================================================
+            // LÓGICA DE INTERFACE
+            // =========================================================
 
-                if (username && roomName) {
-                    socket.emit('join room', roomName, username, function(roomJoined) {
-                        currentRoom = roomJoined;
-                        $('#currentRoomDisplay').text(`Sala: ${currentRoom} (Usuário: ${username})`);
-                        $('#messages').empty();
-                        $('#messages').append('<p class="message-system">Você entrou na sala ' + currentRoom + '</p>');
-                        
-                        $('#m').prop('disabled', false);
-                        $('#sendButton').prop('disabled', false);
-                        $('#m').focus();
-                        
-                        entryModal.hide();
-                    });
-                } else {
-                    alert('Por favor, preencha seu nome e o nome da sala.');
-                }
+            // Mostra o chat (adiciona a classe 'active-chat' no mobile)
+            function openChatWindow() {
+                $('#chatWindowColumn').addClass('active-chat');
+            }
+            
+            // Volta para a lista de chats (remove a classe 'active-chat' no mobile)
+            $('#backToChats').click(function() {
+                $('#chatWindowColumn').removeClass('active-chat');
+            });
+            
+            // Lógica para abrir Sub-Modal (Sala Pública)
+            $('#openPublicRoomsModal').click(function() {
+                newChatModal.hide(); // Esconde o modal de seleção
+                createPublicRoomModal.show(); // Mostra o modal de criação
             });
 
-            // Lógica de ENVIAR Mensagem
+            // =========================================================
+            // LÓGICA DO SOCKET.IO E DO CHAT
+            // =========================================================
+
+            // --- 1. Definir/Salvar Usuário ---
+            function setAndSaveUsername() {
+                let newUsername = $('#usernameInput').val().trim();
+                
+                if (newUsername) {
+                    username = newUsername;
+                    isDefaultUsername = false;
+                } else {
+                    username = `Anônimo${Math.floor(Math.random() * 1000)}`;
+                    isDefaultUsername = true;
+                }
+
+                entryModal.hide();
+                $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
+                
+                if (currentRoom === '') {
+                    joinRoom('Geral'); // Primeira entrada
+                } else {
+                    joinRoom(currentRoom); // Edição de nome: re-entra na sala atual
+                }
+            }
+
+            $('#saveUsernameButton').click(setAndSaveUsername);
+            
+            $('#editUsernameButton').click(function() {
+                $('#usernameInput').val(isDefaultUsername ? '' : username); 
+                entryModal.show();
+            });
+
+            // --- 2. Entrar em uma Sala (Chat) ---
+            function joinRoom(roomName) {
+                if (!username) {
+                    setAndSaveUsername(); 
+                    return;
+                }
+                
+                // Envia evento para o servidor
+                socket.emit('join room', roomName, username, function(roomJoined) {
+                    currentRoom = roomJoined;
+                    
+                    // Lógica para definir o nome de exibição do chat
+                    let displayTitle;
+                    if (roomJoined.startsWith('DM_')) {
+                         // Se for DM_User1_User2, mostra o nome do outro usuário
+                        const parts = roomJoined.split('_');
+                        displayTitle = parts[1] === username ? parts[2] : parts[1];
+                        displayTitle = `Chat com ${displayTitle}`;
+                    } else if (roomJoined === 'Geral') {
+                        displayTitle = 'Sala Geral (Pública)';
+                    } else {
+                        displayTitle = roomJoined;
+                    }
+                    
+                    // Atualiza o cabeçalho do chat
+                    $('#currentRoomDisplay').text(displayTitle);
+                    
+                    $('#messages').empty(); 
+                    $('#messages').append('<p class="message-system">Você entrou no chat: ' + displayTitle + '</p>');
+                    
+                    // Habilita o formulário
+                    $('#m').prop('disabled', false);
+                    $('#sendButton').prop('disabled', false);
+                    $('#m').focus();
+
+                    // Marca o chat como ativo e abre a janela
+                    $('.chat-item').removeClass('active');
+                    $(`#roomList .chat-item[data-room='${roomJoined}']`).addClass('active');
+                    openChatWindow();
+                });
+            }
+
+            // --- 3. Criar Nova Sala (Ação do Modal) ---
+            $('#createRoomButton').click(function() {
+                const newRoomName = $('#newRoomInput').val().trim();
+                if (newRoomName) {
+                    createPublicRoomModal.hide();
+                    joinRoom(newRoomName);
+                    $('#newRoomInput').val(''); 
+                } else {
+                    alert('Digite um nome para a nova sala.');
+                }
+            });
+            
+            // --- 4. Lógica de Envio de Mensagem ---
             $('#form').submit(function(e) {
                 e.preventDefault();
                 const messageText = $('#m').val().trim();
                 
                 if (messageText && currentRoom) {
                     socket.emit('chat message', messageText);
-                    
                     addMessage({ user: username, msg: messageText, type: 'user' }, true);
-                    
                     $('#m').val('');
                 }
                 return false;
             });
 
-            // Lógica de RECEBER Mensagem
+            // =========================================================
+            // LÓGICA DE RECEBIMENTO DE DADOS
+            // =========================================================
+
+            socket.on('room list update', function(rooms) {
+                const $roomList = $('#roomList').empty();
+                
+                if (username && currentRoom === '') {
+                     // Entra na sala Geral apenas se o nome estiver definido e não houver sala
+                     joinRoom('Geral');
+                }
+
+                $.each(rooms, function(index, room) {
+                    let chatTitle;
+                    const isDM = room.name.startsWith('DM_');
+
+                    if (isDM) {
+                         // Simulação de DM: mostra o nome do outro usuário
+                        const parts = room.name.split('_');
+                        chatTitle = parts[1] === username ? parts[2] : parts[1];
+                    } else {
+                        // Sala Pública
+                        chatTitle = room.name === 'Geral' 
+                                      ? 'Sala Geral (Pública)' 
+                                      : room.name;
+                    }
+                    
+                    const lastMessagePreview = isDM 
+                                               ? `Chat pessoal: ${room.count} na sala` 
+                                               : `${room.count} usuário(s) ativo(s)`;
+
+                    const $item = $('<div>')
+                        .addClass('chat-item')
+                        .attr('data-room', room.name)
+                        .html(`
+                            <h6>${chatTitle}</h6>
+                            <p>${lastMessagePreview}</p>
+                        `);
+                    
+                    if (room.name === currentRoom) {
+                        $item.addClass('active');
+                    }
+
+                    $item.click(function() {
+                        joinRoom(room.name);
+                    });
+
+                    $roomList.append($item);
+                });
+            });
+
+
             socket.on('chat message', function(data) {
-                if (data.user !== username || data.type === 'system') {
-                    addMessage(data, false);
+                if (data.room === currentRoom || data.type === 'system') {
+                    if (data.user !== username || data.type === 'system') {
+                        addMessage(data, false);
+                    }
                 }
             });
             
-            // Lógica de tratamento de erros de conexão
-            socket.on('connect_error', (err) => {
-                console.error("Erro de conexão com o servidor:", err.message);
-                $('#messages').append('<p class="message-system" style="color: red;">Erro ao conectar ao servidor. Verifique o endereço e se o servidor Node.js está rodando.</p>');
-            });
+            // --- Funções Auxiliares de Renderização ---
 
-
-            // Função para adicionar mensagem ao DOM
             function addMessage(data, isMine) {
                 let msgElement;
                 const messagesDiv = $('#messages');
 
                 if (data.type === 'system') {
                     msgElement = $('<p>').addClass('message-system').text(data.msg);
+                    messagesDiv.prepend(msgElement);
                 } else {
                     const userClass = isMine ? 'my-message' : 'other-message';
                     
-                    const userSpan = $('<span>').css('font-weight', 'bold').text(data.user + ': ');
-                    
                     msgElement = $('<div>')
-                        .addClass('message-user ' + userClass + ' shadow-sm')
-                        .append(userSpan)
+                        .addClass('message-user ' + userClass)
+                        .append(isMine ? '' : $('<span>').addClass('username').text(data.user + ': '))
                         .append(data.msg);
+                        
+                    messagesDiv.prepend(msgElement);
                 }
 
-                messagesDiv.append(msgElement);
-                messagesDiv.scrollTop(messagesDiv[0].scrollHeight);
+                messagesDiv.scrollTop(0);
             }
+            
+            socket.on('connect_error', (err) => {
+                console.error("Erro de conexão:", err.message);
+                $('#messages').append('<p class="message-system" style="color: red;">Erro de conexão com o servidor. Tente recarregar a página.</p>');
+            });
         });
     </script>
 </body>
