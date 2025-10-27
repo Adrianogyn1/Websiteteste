@@ -30,15 +30,16 @@ try {
     $params = [];
     $sql = "SELECT * FROM PaymanetHistorico";
     
+    $sql .= " where playerId = :userId";
+    $params[':userId'] = $userId;
     
     if($carteiraId>0)
     {
-        $sql .= " where carteiraId = :carteira";
+        $sql .= " and carteiraId = :carteira";
         $params[':carteira'] = $carteiraId;
     }
     
-    $sql .= " where playerId = :userId";
-    $params[':userId'] = $userId;
+    
 
     // Total de registros
     $stmtTotal = $db->prepare($sql);
