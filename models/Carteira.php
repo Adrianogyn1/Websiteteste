@@ -123,6 +123,27 @@ class Carteira
         $this->db->query("DELETE FROM Carteira WHERE id = ?", [$this->id]);
         return true;
     }
+    
+    public function GetSelected($userId): ?Carteira 
+    {
+        $stmt = $this->db->query("SELECT * FROM Carteira WHERE selected = 1 AND PayerId = ?", [$userId]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$data) return null;
+
+        $this->id = (int)$data['id'];
+        $this->nome = $data['nome'];
+        $this->meta = $data['meta'];
+        $this->useRelatorio = (bool)$data['useRelatorio'];
+        $this->PayerId = (int)$data['PayerId'];
+        $this->url = $data['url'];
+        $this->login = $data['login'];
+        $this->senha = $data['senha'];
+        $this->teste = (bool)$data['teste'];
+        $this->selected = (bool)$data['selected'];
+
+        return $this;
+    }
+    
 
     public function read(int $id): ?Carteira
     {

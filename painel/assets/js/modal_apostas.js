@@ -61,8 +61,8 @@ $(document).ready(function ()
         const gameId = parseInt($form.find('input[name="gameId"]').val()) || 0;
         
         const formData = {
-            playerId: 123, 
-            carteiraId: 5, 
+            
+            
             valor: valorAposta, 
             gameId: gameId,
             gameNome: $form.find('input[name="jogoNome"]').val(),
@@ -70,8 +70,8 @@ $(document).ready(function ()
             
             // Valores de Exemplo para a classe PaymanetHistorico
             
-            tempo: 0, 
-            duplicar: $form.find('input[name="duplicar"]').is(':checked')
+            tempo: 0
+            
         };
 
         $.ajax({
