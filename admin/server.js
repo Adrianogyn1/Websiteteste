@@ -1,49 +1,82 @@
-const WebSocket = require('ws');
+const express = require('express');
+const app = express();
 const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
+const path = require('path');
 
-// Definir a porta fora da string para evitar erro
-const port = 3000; 
-const server = http.createServer();
-const wss = new WebSocket.Server({ server });
+// Servir arquivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
-wss.on('connection', ws => 
-{
-    console.log('Cliente conectado!');
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Lógica do Socket.IO (INALETRADA: Gerenciamento de conexão, salas e mensagens)
+io.on('connection', (socket) => {
+    console.log('Um usuário conectado com o ID:', socket.id);
     
-    // 💡 OTIMIZAÇÃO: Avisar apenas os outros clientes (que já estão conectados)
-    // ws é o cliente que acabou de entrar, não precisa avisar a si mesmo.
-    wss.clients.forEach(client => {
-        // Verifica se o cliente está aberto E não é o cliente atual
-        if (client.readyState === WebSocket.OPEN && client !== ws) {
-            client.send('Um novo usuário entrou no chat!');
+    socket.on('join room', (roomName, username, callback) => {
+        const currentRooms = Array.from(socket.rooms).filter(r => r !== socket.id);
+        currentRooms.forEach(room => socket.leave(room));
+        
+        socket.join(roomName);
+        socket.data.username = username;
+        socket.data.room = roomName;
+        
+        console.log(`Usuário ${username} (ID: ${socket.id}) entrou na sala: ${roomName}`);
+        
+        socket.to(roomName).emit('chat message', {
+            user: 'Sistema',
+            msg: `${username} entrou na sala.`,
+            room: roomName,
+            type: 'system'
+        });
+        
+        if (callback) {
+            callback(roomName);
         }
     });
     
-    ws.on('message', message => {
-        // 💡 OTIMIZAÇÃO: Converte a mensagem para string antes de logar e enviar
-        const messageString = message.toString();
-        console.log('Mensagem recebida:', messageString);
+    socket.on('chat message', (msg) => {
+        const room = socket.data.room;
+        const user = socket.data.username || 'Anônimo';
+        
+        if (room) {
+            const messageData = {
+                user: user,
+                msg: msg,
+                room: room,
+                type: 'user'
+            };
             
-        // Envia a mensagem para TODOS os clientes conectados
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(messageString);
-            }
-        });
+            io.to(room).emit('chat message', messageData);
+            console.log(`Mensagem na sala [${room}] de ${user}: ${msg}`);
+        } else {
+            console.log(`Mensagem de ${user} ignorada: Não está em uma sala.`);
+        }
     });
-
-    ws.on('close', () => {
-        console.log('Cliente desconectado.');
-         // Avisa os clientes remanescentes sobre a desconexão
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send('Um usuário saiu do chat.');
-            }
-        });
+    
+    socket.on('disconnect', () => {
+        const user = socket.data.username || 'Um usuário';
+        const room = socket.data.room;
+        
+        if (room) {
+            console.log(`Usuário ${user} desconectado da sala: ${room}`);
+            io.to(room).emit('chat message', {
+                user: 'Sistema',
+                msg: `${user} saiu da sala.`,
+                room: room,
+                type: 'system'
+            });
+        } else {
+            console.log('Usuário desconectado (sem sala)');
+        }
     });
 });
 
-// ❌ CORREÇÃO: Erro de sintaxe na linha de console.log. Use template literals ou concatenação.
-server.listen(port, '0.0.0.0', () => {
-    console.log(`Servidor de chat rodando na porta ${port}`); 
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
