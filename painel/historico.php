@@ -1,5 +1,17 @@
 <?php include __DIR__.'/includes/header.php'; ?>
 
+<?php
+require_once __DIR__.'/../autoload.php';
+session_start();
+
+$userId = $_SESSION['id'] ?? 0;
+
+$db = (new Database())->getPdo();
+$stmt = $db->prepare("SELECT id, nome, selected FROM Carteira WHERE PayerId = :uid");
+$stmt->execute([':uid' => $userId]);
+$carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 
 <main class="container-fluid pt-5 mt-3">
     <div class="container py-4">
@@ -19,6 +31,33 @@
                 <input type="text" id="filtroData" class="form-control" placeholder="Selecione o período">
             </div>
         </div>
+        
+        <!-- Select de carteiras -->
+<div class="mb-3">
+    <label for="selectCarteira" class="form-label">Selecione a carteira:</label>
+    <select id="selectCarteira" class="form-select">
+        <option value="0">Todas</option>
+        <?php foreach($carteiras as $c): 
+        if($c['selected'])
+        {
+            ?>
+                         <option value="<?= $c['id'] ?>" selected="true"><?= htmlspecialchars($c['nome']) ?></option>
+            <?php
+        }
+        else
+        {
+                        ?>
+                         <option value="<?= $c['id'] ?>" ><?= htmlspecialchars($c['nome']) ?></option>
+            <?php
+        }
+        ?>
+
+                  
+     <?php endforeach; ?>
+    </select>
+</div>
+        
+        
 
         <!-- ===== RESUMO ===== -->
         <div class="row g-3 mb-4">
@@ -110,10 +149,12 @@ $(function() {
     
 let currentPage = 1;
 const pageSize = 20;
+const selectCarteira = $('#selectCarteira');
 
 function loadHistorico(page = 1, search = '') {
     currentPage = page;
-    $.getJSON(`/app/api/pay/list.php`, { page, pageSize, search }, function(resp) {
+    
+    $.getJSON(`/app/api/pay/list.php?id=${selectCarteira.val()}`, { page, pageSize, search }, function(resp) {
         if (!resp.sucess) {
             alert(resp.msg);
            // $('#gamesList').html('<p class="text-danger">' + resp.msg + '</p>');
@@ -184,6 +225,14 @@ return;
        // carregarTabela();
       //  alert('Histórico atualizado!');
     });
+    
+      selectCarteira.chance(() => {
+        loadHistorico();
+       // carregarTabela();
+      //  alert('Histórico atualizado!');
+    });
+    
+    
 });
 </script>
 
