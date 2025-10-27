@@ -1,136 +1,181 @@
+// server.js
+
+// --- 1. CONFIGURAÇÕES BÁSICAS ---
 const express = require('express');
 const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, {
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+    // Configuração CORS: essencial para aceitar conexões de IPs diferentes
+    // Ou de localhost, ou da origem nula (se for o caso de file:// - embora não recomendado)
     cors: {
-        origin: "*", // Permite conexões de qualquer origem para facilitar testes
+        origin: ["*", null], // Permite qualquer origem e a origem 'null'
+        methods: ["GET", "POST"]
     }
-});
-const path = require('path');
-
-// --- Função para Gerenciar e Emitir a Lista de Salas ---
-function getActiveRooms() {
-    // Pega todas as salas (que não são IDs de sockets individuais)
-    const rooms = io.sockets.adapter.rooms;
-    const activeRooms = [];
-    
-    // O Socket.IO armazena o ID do socket como uma "sala", precisamos filtrar isso.
-    rooms.forEach((setOfSockets, roomName) => {
-        // Se a sala não for o ID de um socket (e tiver pelo menos um cliente)
-        if (!setOfSockets.has(roomName)) {
-            activeRooms.push({
-                name: roomName,
-                count: setOfSockets.size
-            });
-        }
-    });
-    // Sempre teremos pelo menos uma sala 'Geral' para começar
-    if (!activeRooms.find(r => r.name === 'Geral')) {
-        activeRooms.unshift({ name: 'Geral', count: 0 });
-    }
-    
-    return activeRooms;
-}
-
-function broadcastRoomList() {
-    const rooms = getActiveRooms();
-    io.emit('room list update', rooms); // Envia para TODOS os clientes
-}
-// --------------------------------------------------------
-
-// Configuração do Express
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Lógica do Socket.IO
-io.on('connection', (socket) => {
-    console.log('Usuário conectado:', socket.id);
-    
-    // Envia a lista de salas assim que o usuário se conecta
-    broadcastRoomList();
-    
-    // Evento para entrar em uma sala
-    socket.on('join room', (roomName, username, callback) => {
-        const previousRoom = socket.data.room;
-        
-        // 1. Sair da sala anterior
-        if (previousRoom) {
-            socket.leave(previousRoom);
-            // Notificar a sala anterior sobre a saída
-            io.to(previousRoom).emit('chat message', {
-                user: 'Sistema',
-                msg: `${username} saiu da sala.`,
-                type: 'system'
-            });
-        }
-        
-        // 2. Entrar na nova sala
-        socket.join(roomName);
-        socket.data.username = username;
-        socket.data.room = roomName;
-        
-        // 3. Notificar a nova sala sobre a entrada
-        io.to(roomName).emit('chat message', {
-            user: 'Sistema',
-            msg: `${username} entrou na sala.`,
-            type: 'system'
-        });
-        
-        console.log(`Usuário ${username} mudou para a sala: ${roomName}`);
-        
-        // 4. Atualizar a lista de salas para todos (novo join/leave pode ter criado/esvaziado uma sala)
-        broadcastRoomList();
-        
-        // 5. Callback de sucesso
-        if (callback) {
-            callback(roomName);
-        }
-    });
-    
-    // Evento para receber e retransmitir mensagens
-    socket.on('chat message', (msg) => {
-        const room = socket.data.room;
-        const user = socket.data.username || 'Anônimo';
-        
-        if (room && user) {
-            const messageData = {
-                user: user,
-                msg: msg,
-                room: room,
-                type: 'user'
-            };
-            // Envia para todos na sala
-            io.to(room).emit('chat message', messageData);
-            console.log(`[${room}] ${user}: ${msg}`);
-        }
-    });
-    
-    // Evento de desconexão
-    socket.on('disconnect', () => {
-        const user = socket.data.username;
-        const room = socket.data.room;
-        
-        if (room && user) {
-            // Notificar a sala sobre a desconexão
-            io.to(room).emit('chat message', {
-                user: 'Sistema',
-                msg: `${user} saiu da sala.`,
-                type: 'system'
-            });
-        }
-        console.log(`Usuário desconectado: ${socket.id}`);
-        
-        // Atualizar a lista de salas (um usuário a menos)
-        // Pequeno delay para garantir que o socket.leave seja processado internamente
-        setTimeout(broadcastRoomList, 50);
-    });
 });
 
 const PORT = 3000;
-server.listen(PORT, '0.0.0.0', () => { // Escutar em 0.0.0.0 para ser acessível externamente
-    console.log(`Servidor rodando em http://35.209.27.45:${PORT} (ou localhost)`);
+
+// Serve arquivos estáticos da pasta 'public'
+app.use(express.static('public'));
+
+// Rota básica para o arquivo HTML
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+
+// --- 2. LÓGICA DE SALAS E UTILITÁRIOS ---
+let rooms = { 'Geral': { count: 0, sockets: {} } }; // Salas ativas e contagem de usuários
+let userMap = {}; // Mapeia o nome do usuário para o ID do Socket (para DMs)
+
+// Função auxiliar para gerar um nome de sala consistente para DM
+function getPrivateRoomName(user1, user2) {
+    // Garante que o nome da sala seja o mesmo, independentemente da ordem
+    const sortedUsers = [user1, user2].sort();
+    return `DM_${sortedUsers[0]}_${sortedUsers[1]}`;
+}
+
+// Envia a lista de salas atualizada para todos os clientes
+function updateRoomList() {
+    const activeRooms = Object.keys(rooms).map(roomName => ({
+        name: roomName,
+        count: rooms[roomName].count
+    }));
+    io.emit('room list update', activeRooms);
+}
+
+
+// --- 3. EVENTOS DO SOCKET.IO ---
+io.on('connection', (socket) => {
+    let currentUsername = null;
+    let currentRoom = null;
+    
+    console.log(`[CONEXÃO] Novo usuário conectado: ${socket.id}`);
+    
+    
+    // --- ENTRAR NA SALA ---
+    socket.on('join room', (roomName, username, callback) => {
+        // 1. Validar e Sair da Sala Antiga
+        if (currentRoom) {
+            // Remove o socket da sala antiga
+            socket.leave(currentRoom);
+            
+            // Decrementa o contador da sala antiga
+            if (rooms[currentRoom]) {
+                rooms[currentRoom].count--;
+                delete rooms[currentRoom].sockets[socket.id];
+                
+                // Remove a sala se estiver vazia (exceto a sala 'Geral')
+                if (rooms[currentRoom].count <= 0 && currentRoom !== 'Geral') {
+                    delete rooms[currentRoom];
+                }
+            }
+            
+            // Notifica os outros sobre a saída
+            io.to(currentRoom).emit('chat message', {
+                user: 'Sistema',
+                msg: `${currentUsername} saiu da sala.`,
+                room: currentRoom,
+                type: 'system'
+            });
+        }
+        
+        // 2. Entrar na Nova Sala
+        currentUsername = username;
+        currentRoom = roomName;
+        userMap[currentUsername] = socket.id; // Atualiza o mapeamento de usuário
+        
+        socket.join(currentRoom);
+        
+        // Cria a sala se não existir (apenas para contagem)
+        if (!rooms[currentRoom]) {
+            rooms[currentRoom] = { count: 0, sockets: {} };
+        }
+        rooms[currentRoom].count++;
+        rooms[currentRoom].sockets[socket.id] = true;
+        
+        // 3. Notificações e Callbacks
+        console.log(`[JOIN] ${currentUsername} (${socket.id}) entrou em: ${currentRoom}`);
+        
+        // Feedback para o próprio usuário (Mensagem de Sistema)
+        socket.emit('chat message', {
+            user: 'Sistema',
+            msg: `Você entrou na sala/chat: ${currentRoom}`,
+            room: currentRoom,
+            type: 'system'
+        });
+        
+        // Broadcast para a sala sobre o novo membro
+        socket.to(currentRoom).emit('chat message', {
+            user: 'Sistema',
+            msg: `${currentUsername} entrou na sala.`,
+            room: currentRoom,
+            type: 'system'
+        });
+        
+        updateRoomList();
+        if (callback) {
+            callback(currentRoom);
+        }
+    });
+    
+    
+    // --- CHAT MESSAGE ---
+    socket.on('chat message', (msg) => {
+        if (currentRoom && currentUsername && msg.trim()) {
+            const data = {
+                user: currentUsername,
+                msg: msg,
+                room: currentRoom,
+                type: 'user'
+            };
+            // Envia a mensagem para todos, incluindo o remetente, na sala
+            io.to(currentRoom).emit('chat message', data);
+        }
+    });
+    
+    
+    // --- LISTA DE USUÁRIOS (para DM) ---
+    socket.on('get active users', (callback) => {
+        const activeUsers = Object.keys(userMap).filter(user => user !== currentUsername);
+        if (callback) callback(activeUsers);
+    });
+    
+    
+    // --- DESCONEXÃO ---
+    socket.on('disconnect', () => {
+        console.log(`[DESCONEXÃO] Usuário desconectado: ${socket.id}`);
+        
+        if (currentUsername) {
+            // Limpa o mapeamento de usuário
+            delete userMap[currentUsername];
+        }
+        
+        if (currentRoom && rooms[currentRoom]) {
+            // Decrementa o contador da sala
+            rooms[currentRoom].count--;
+            delete rooms[currentRoom].sockets[socket.id];
+            
+            // Se a sala ficar vazia (e não for 'Geral'), remove
+            if (rooms[currentRoom].count <= 0 && currentRoom !== 'Geral') {
+                delete rooms[currentRoom];
+            } else {
+                // Notifica a sala sobre a saída
+                io.to(currentRoom).emit('chat message', {
+                    user: 'Sistema',
+                    msg: `${currentUsername} desconectou.`,
+                    room: currentRoom,
+                    type: 'system'
+                });
+            }
+        }
+        updateRoomList();
+    });
+});
+
+
+// --- 4. INICIALIZAÇÃO DO SERVIDOR HTTP ---
+http.listen(PORT, () => {
+    console.log(`Servidor Node.js rodando em http://localhost:${PORT}`);
+    console.log(`Inicie o servidor em background com: pm2 start server.js --name "MeuChatServer"`);
 });
