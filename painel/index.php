@@ -29,7 +29,7 @@ $carteiras = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if($c->selected)
         {
             ?>
-                         <option value="<?= $c['id'] ?>" selected="true"><?= htmlspecialchars($c['nome']) ?></option>
+                         <option value="<?= $c['id'] ?>" selected="true"><?= htmlspecialchars($c['nome']) ?> <?php echo $c->selected; ?></option>
             <?php
         }
         else
