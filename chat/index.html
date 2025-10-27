@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
+        /* Estilos Base */
         body, html { height: 100%; margin: 0; background-color: #f0f0f0; }
 
         .app-container {
@@ -31,7 +32,6 @@
             display: flex;
             flex-direction: column;
             background-color: #f0f0f0; 
-            /* Começa escondida no mobile e com uma largura base no desktop */
             min-width: 0; 
             transition: transform 0.3s ease;
         }
@@ -42,26 +42,22 @@
                 width: 100%;
                 position: absolute;
                 z-index: 1000;
-                /* Estado inicial: visível */
             }
             .chat-window-column {
                 width: 100%;
-                /* Estado inicial: escondida */
                 transform: translateX(100%); 
                 position: absolute;
                 z-index: 1010;
             }
             .chat-window-column.active-chat {
-                /* Chat ativo no mobile: desliza para a frente */
                 transform: translateX(0);
             }
-            /* A lista de chats deve estar sempre em 100% no mobile */
             .chat-list-column:not(.hidden) {
                  width: 100%;
             }
         }
         
-        /* Estilos de Chats/Mensagens (Mantidos) */
+        /* Estilos de Chats/Mensagens */
         .chat-item {
             padding: 15px;
             border-bottom: 1px solid #eee;
@@ -84,6 +80,7 @@
             margin: 0;
         }
 
+        /* Botão Flutuante */
         .fab {
             position: fixed;
             bottom: 30px;
@@ -105,6 +102,7 @@
             background-color: #0b5ed7;
         }
 
+        /* Área de Mensagens */
         #messages {
             flex-grow: 1;
             overflow-y: auto;
@@ -138,6 +136,25 @@
             clear: both;
         }
         .message-user .username { font-size: 0.8em; color: #6c757d; display: block; margin-bottom: 2px;}
+
+        /* Indicador de Status de Conexão */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            transition: background-color 0.3s;
+        }
+        .status-indicator.connected {
+            background-color: #198754; /* Verde (Success) */
+        }
+        .status-indicator.disconnected {
+            background-color: #dc3545; /* Vermelho (Danger) */
+        }
+        .status-indicator.connecting {
+            background-color: #ffc107; /* Amarelo (Warning) */
+        }
     </style>
 </head>
 <body>
@@ -171,11 +188,11 @@
           <div class="modal-body">
             <label class="form-label">Tipo de Conversa</label>
             <div class="mb-3">
-                <button class="btn btn-outline-primary w-100 mb-2" id="openPublicRoomsModal">
+                <button class="btn btn-outline-primary w-100 mb-2" id="openPublicRoomsButton">
                     <i class="fas fa-users me-2"></i> Criar/Entrar em Sala Pública
                 </button>
-                <button class="btn btn-outline-success w-100" id="openPrivateChatModal" disabled>
-                     <i class="fas fa-user me-2"></i> Iniciar Chat Pessoal (DM) - *Funcionalidade Desabilitada*
+                <button class="btn btn-outline-success w-100" id="openPrivateChatButton" disabled>
+                     <i class="fas fa-user me-2"></i> Iniciar Chat Pessoal (DM) - *Desabilitado*
                 </button>
             </div>
           </div>
@@ -212,6 +229,12 @@
         <div class="chat-list-column" id="chatListColumn">
             <nav class="navbar navbar-light bg-light border-bottom p-3 d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1">Conversas</span>
+                
+                <div class="d-flex align-items-center me-2" title="Status da Conexão">
+                    <span id="connectionStatusIndicator" class="status-indicator disconnected"></span>
+                    <span id="connectionStatusText" class="text-muted small">Desconectado</span>
+                </div>
+
                 <button class="btn btn-sm btn-outline-secondary" id="editUsernameButton" title="Editar Nome">
                     <i class="fas fa-user-edit"></i>
                 </button>
@@ -258,9 +281,9 @@
     <script>
         $(function () {
             // =========================================================
-            // CONFIGURAÇÃO
+            // CONFIGURAÇÃO E INICIALIZAÇÃO
             // =========================================================
-            const SERVER_URL = 'http://35.209.27.45:3000'; 
+            const SERVER_URL = '35.209.27.45:3000'; 
             const socket = io(SERVER_URL);
 
             let username = '';
@@ -276,23 +299,74 @@
             entryModal.show();
 
             // =========================================================
+            // STATUS DE CONEXÃO
+            // =========================================================
+
+            function updateConnectionStatus(status) {
+                const indicator = $('#connectionStatusIndicator');
+                const text = $('#connectionStatusText');
+                
+                indicator.removeClass('connected disconnected connecting');
+                
+                if (status === 'connected') {
+                    indicator.addClass('connected');
+                    text.text('Conectado');
+                    text.removeClass('text-danger text-warning').addClass('text-success');
+                } else if (status === 'connecting') {
+                    indicator.addClass('connecting');
+                    text.text('Reconectando...');
+                    text.removeClass('text-success text-danger').addClass('text-warning');
+                } else { // 'disconnected' ou 'error'
+                    indicator.addClass('disconnected');
+                    text.text('Desconectado');
+                    text.removeClass('text-success text-warning').addClass('text-danger');
+                }
+            }
+            
+            socket.on('connect', function() {
+                console.log('Socket.IO conectado!');
+                updateConnectionStatus('connected');
+                // Após reconectar, se já tínhamos um nome, re-entramos na sala
+                if (username && currentRoom) {
+                     joinRoom(currentRoom);
+                } else if (username && currentRoom === 'Geral') {
+                     joinRoom('Geral');
+                }
+            });
+            
+            socket.on('disconnect', function() {
+                console.log('Socket.IO desconectado!');
+                updateConnectionStatus('disconnected');
+            });
+
+            socket.on('reconnect_attempt', function() {
+                console.log('Tentando reconectar...');
+                updateConnectionStatus('connecting');
+            });
+            
+            // Define o status inicial como desconectado
+            updateConnectionStatus('disconnected');
+
+            // =========================================================
             // LÓGICA DE INTERFACE
             // =========================================================
 
-            // Mostra o chat (adiciona a classe 'active-chat' no mobile)
             function openChatWindow() {
                 $('#chatWindowColumn').addClass('active-chat');
             }
             
-            // Volta para a lista de chats (remove a classe 'active-chat' no mobile)
             $('#backToChats').click(function() {
                 $('#chatWindowColumn').removeClass('active-chat');
             });
             
-            // Lógica para abrir Sub-Modal (Sala Pública)
-            $('#openPublicRoomsModal').click(function() {
-                newChatModal.hide(); // Esconde o modal de seleção
-                createPublicRoomModal.show(); // Mostra o modal de criação
+            // SOLUÇÃO PARA MODAIS ANINHADOS: Usar setTimeout
+            $('#openPublicRoomsButton').click(function() {
+                newChatModal.hide(); // Esconde o modal de seleção (Pai)
+                
+                // Aguarda o fechamento completo do modal antes de abrir o próximo
+                setTimeout(() => {
+                    createPublicRoomModal.show(); // Mostra o modal de criação (Filho)
+                }, 300); 
             });
 
             // =========================================================
@@ -301,6 +375,7 @@
 
             // --- 1. Definir/Salvar Usuário ---
             function setAndSaveUsername() {
+                let oldUsername = username;
                 let newUsername = $('#usernameInput').val().trim();
                 
                 if (newUsername) {
@@ -314,10 +389,13 @@
                 entryModal.hide();
                 $('#userInfoDisplay').html(`Usuário: <b>${username}</b>`);
                 
-                if (currentRoom === '') {
-                    joinRoom('Geral'); // Primeira entrada
-                } else {
-                    joinRoom(currentRoom); // Edição de nome: re-entra na sala atual
+                // Entra na sala Geral se for a primeira vez, ou re-entra na sala atual se o nome mudou
+                if (socket.connected) {
+                    if (currentRoom === '') {
+                        joinRoom('Geral'); 
+                    } else if (username !== oldUsername) {
+                        joinRoom(currentRoom); 
+                    }
                 }
             }
 
@@ -335,14 +413,17 @@
                     return;
                 }
                 
-                // Envia evento para o servidor
+                if (!socket.connected) {
+                    alert('Aguarde a conexão com o servidor...');
+                    return;
+                }
+                
                 socket.emit('join room', roomName, username, function(roomJoined) {
                     currentRoom = roomJoined;
                     
-                    // Lógica para definir o nome de exibição do chat
                     let displayTitle;
+                    // Lógica para definir o nome de exibição (Sala ou Destinatário Simulado)
                     if (roomJoined.startsWith('DM_')) {
-                         // Se for DM_User1_User2, mostra o nome do outro usuário
                         const parts = roomJoined.split('_');
                         displayTitle = parts[1] === username ? parts[2] : parts[1];
                         displayTitle = `Chat com ${displayTitle}`;
@@ -352,18 +433,15 @@
                         displayTitle = roomJoined;
                     }
                     
-                    // Atualiza o cabeçalho do chat
                     $('#currentRoomDisplay').text(displayTitle);
                     
                     $('#messages').empty(); 
                     $('#messages').append('<p class="message-system">Você entrou no chat: ' + displayTitle + '</p>');
                     
-                    // Habilita o formulário
                     $('#m').prop('disabled', false);
                     $('#sendButton').prop('disabled', false);
                     $('#m').focus();
 
-                    // Marca o chat como ativo e abre a janela
                     $('.chat-item').removeClass('active');
                     $(`#roomList .chat-item[data-room='${roomJoined}']`).addClass('active');
                     openChatWindow();
@@ -387,6 +465,11 @@
                 e.preventDefault();
                 const messageText = $('#m').val().trim();
                 
+                if (!socket.connected) {
+                    alert('Você está desconectado. Reconectando...');
+                    return false;
+                }
+
                 if (messageText && currentRoom) {
                     socket.emit('chat message', messageText);
                     addMessage({ user: username, msg: messageText, type: 'user' }, true);
@@ -402,8 +485,8 @@
             socket.on('room list update', function(rooms) {
                 const $roomList = $('#roomList').empty();
                 
+                // Garante a entrada na sala Geral após o nome ser definido
                 if (username && currentRoom === '') {
-                     // Entra na sala Geral apenas se o nome estiver definido e não houver sala
                      joinRoom('Geral');
                 }
 
@@ -412,11 +495,9 @@
                     const isDM = room.name.startsWith('DM_');
 
                     if (isDM) {
-                         // Simulação de DM: mostra o nome do outro usuário
                         const parts = room.name.split('_');
                         chatTitle = parts[1] === username ? parts[2] : parts[1];
                     } else {
-                        // Sala Pública
                         chatTitle = room.name === 'Geral' 
                                       ? 'Sala Geral (Pública)' 
                                       : room.name;
@@ -455,8 +536,6 @@
                 }
             });
             
-            // --- Funções Auxiliares de Renderização ---
-
             function addMessage(data, isMine) {
                 let msgElement;
                 const messagesDiv = $('#messages');
@@ -480,6 +559,7 @@
             
             socket.on('connect_error', (err) => {
                 console.error("Erro de conexão:", err.message);
+                updateConnectionStatus('disconnected');
                 $('#messages').append('<p class="message-system" style="color: red;">Erro de conexão com o servidor. Tente recarregar a página.</p>');
             });
         });
