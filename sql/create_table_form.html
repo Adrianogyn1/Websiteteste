@@ -1,0 +1,107 @@
+<form id="create-table-form" method="POST" action="table_editor.php?db=<?php echo $db_param; ?>">
+    <input type="hidden" name="action_type" value="create_table">
+    
+    <div class="mb-3">
+        <label for="new_table_name" class="form-label">Nome da Tabela:</label>
+        <input type="text" id="new_table_name" name="new_table_name" class="form-control" required>
+    </div>
+    
+    <h5 class="mt-4">Definição das Colunas</h5>
+    <div class="table-responsive">
+        <table id="columns-table" class="table table-bordered table-sm align-middle" style="min-width: 700px;">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 30%;">Nome da Coluna</th>
+                    <th style="width: 20%;">Tipo de Dado</th>
+                    <th style="width: 15%; text-align: center;">PK / AI</th>
+                    <th style="width: 10%; text-align: center;">NOT NULL</th>
+                    <th style="width: 10%; text-align: center;">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    
+    <button type="button" id="add-column-btn" class="btn btn-primary me-2"><i class="bi bi-plus-circle"></i> Adicionar Coluna</button>
+    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Criar Tabela</button>
+</form>
+
+<script>
+    let columnIndex = 0;
+    
+    // Função para adicionar uma nova linha (usando jQuery)
+    function addColumn() {
+        const newRow = $(`
+            <tr id="row-${columnIndex}">
+                <td><input type="text" name="column[${columnIndex}][name]" class="form-control form-control-sm" required></td>
+                <td>
+                    <select name="column[${columnIndex}][type]" id="type_${columnIndex}" class="form-select form-select-sm">
+                        <option value="INTEGER" selected>INTEGER</option>
+                        <option value="TEXT">TEXT</option>
+                        <option value="REAL">REAL</option>
+                        <option value="BLOB">BLOB</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <input type="checkbox" name="column[${columnIndex}][pk]" class="form-check-input pk-checkbox" data-index="${columnIndex}">
+                    <div id="autoincrement_div_${columnIndex}" class="mt-1" style="font-size: 0.8em; display: none;">
+                        <input type="checkbox" name="column[${columnIndex}][auto_inc]" id="auto_inc_${columnIndex}" class="form-check-input" checked> AI
+                    </div>
+                </td>
+                <td class="text-center">
+                    <input type="checkbox" name="column[${columnIndex}][not_null]" id="not_null_${columnIndex}" class="form-check-input not-null-checkbox">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-column-btn" data-row-id="row-${columnIndex}"><i class="bi bi-x"></i></button>
+                </td>
+            </tr>
+        `);
+        $('#columns-table tbody').append(newRow);
+        columnIndex++;
+    }
+    
+    // Função para remover linha (usando jQuery)
+    $(document).on('click', '.remove-column-btn', function() {
+        const rowId = $(this).data('row-id');
+        $(`#${rowId}`).remove();
+    });
+    
+    // Função para tratar PK e NOT NULL / AI (usando jQuery)
+    $(document).on('change', '.pk-checkbox, select[id^="type_"]', function() {
+        const index = $(this).is('select') ? $(this).attr('id').split('_')[1] : $(this).data('index');
+        const pkCheckbox = $(`input[data-index="${index}"]`);
+        const notNullCheckbox = $(`#not_null_${index}`);
+        const autoincrementDiv = $(`#autoincrement_div_${index}`);
+        const typeSelect = $(`#type_${index}`);
+        
+        if (pkCheckbox.prop('checked')) {
+            // Se for PK, é NOT NULL e desabilita o checkbox
+            notNullCheckbox.prop('checked', true).prop('disabled', true);
+            
+            // Só mostra AI se for INTEGER
+            if (typeSelect.val() === 'INTEGER') {
+                autoincrementDiv.show();
+            } else {
+                autoincrementDiv.hide();
+            }
+            
+        } else {
+            // Se não for PK
+            notNullCheckbox.prop('disabled', false);
+            autoincrementDiv.hide();
+        }
+    });
+    
+    // Inicialização
+    $(document).ready(function() {
+        // Adiciona a função ao botão
+        $('#add-column-btn').on('click', addColumn);
+        
+        // Garante que o formulário comece com 2 linhas
+        if ($('#columns-table tbody tr').length === 0) {
+            addColumn();
+            addColumn();
+        }
+    });
+</script>

@@ -7,14 +7,16 @@ error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica login
 if (!isset($_SESSION['user'])) {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
-$userId = $_SESSION['id'] ?? 0;
+$userId = $_SESSION['user'] ?? 0;
 
 
 
@@ -25,11 +27,14 @@ if ($id <= 0) {
 
 try {
     $db = (new Database())->getPdo();
+  /*  
     $stmt = $db->prepare("SELECT * FROM Carteira WHERE id=:id");
     $stmt->execute(['id' => $id]);
     $game = $stmt->fetch(PDO::FETCH_ASSOC);
+*/
+$cart = Carteira::find($db,$id);
 
-    $msg = new ApiMessage(true, $game ? "carteira encontrado" : "Game não encontrado", $game);
+    $msg = new ApiMessage(true, $cart ? "carteira encontrado" : "Game não encontrado", $cart);
     $msg->toJson();
 } catch (Exception $e) {
     (new ApiMessage(false, $e->getMessage()))->toJson();

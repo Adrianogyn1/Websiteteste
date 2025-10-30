@@ -7,7 +7,9 @@ error_reporting(E_ALL);
 // Carregamento de classes e Enums
 require_once(dirname(__DIR__, 2) . '/autoload.php'); 
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
 
 // Inicializa a mensagem de API (boa prática)
@@ -29,7 +31,7 @@ try
     
     // Valores essenciais que devem ser obtidos do contexto (Sessão/Auth)
 
-    $userId = $_SESSION['id'] ?? 0; 
+    $userId = $_SESSION['user'] ?? 0; 
     $carteiraId = (new Carteira())->GetSelected($userId)->id??0;  //busca no banco
     
     // Verifica se o usuário e a carteira são válidos antes de prosseguir

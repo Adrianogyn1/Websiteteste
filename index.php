@@ -8,7 +8,7 @@ include_once './includes/header.php';
         <br/>
     <a href="/app/login.php">Login</a>
     <br/>
-        <a href="/app/api/index.php">api</a>
+        <a href="/api/index.php">api</a>
         
 <?php 
 include_once './includes/footer.php'; 

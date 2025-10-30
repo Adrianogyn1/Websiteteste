@@ -5,14 +5,16 @@ error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica login
 if (!isset($_SESSION['user'])) {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
-$userId = $_SESSION['id'] ?? 0;
+$userId = $_SESSION['user'] ?? 0;
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);

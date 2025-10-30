@@ -5,14 +5,16 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 */
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica login
 if (!isset($_SESSION['user'])) {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
-$userId = $_SESSION['id'] ?? 0;
+$userId = $_SESSION['user'] ?? 0;
 
 
 $page = intval($_GET['page'] ?? 1);
@@ -21,7 +23,31 @@ $search = $_GET['search'] ?? '';
 
 $offset = ($page - 1) * $pageSize;
 
+$db = (new DataBase())->getPdo();
+
+$carteira = new Carteira();
+$carteira->PayerId=$userId;
+
+//$carts=$carteira->all($db);
+$carteiras=$carteira->allUser($carteira->PayerId);
+
+$msg = new ApiMessage(true, "Lista carregada", [
+    'data' => array_map(fn($c) => $c->toArray(), $carteiras), // converte objetos para array
+]);
+$msg->toJson();
+exit;
+
+
 try {
+    
+  /*  $carteira = new Carteira();
+    $carteira->PayerId= $userId;
+    $all = $carteira->all();
+    
+    $msg = new ApiMessage(true, "",$all);
+    $msg->toJson();
+    
+    */
     $db = (new Database())->getPdo();
 
     $params = [];
@@ -73,6 +99,7 @@ $msg = new ApiMessage(true, "Lista carregada", [
 ]);
 
     $msg->toJson();
+    
 
 } catch (Exception $e) {
     $msg = new ApiMessage(false, $e->getMessage());

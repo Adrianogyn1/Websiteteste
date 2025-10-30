@@ -6,18 +6,35 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 
-$input = json_decode(file_get_contents('php://input'), true);
-$id = intval($input['id'] ?? 0);
+
+
+
+try {
+    $input = json_decode(file_get_contents('php://input'), true);
+$id = intval($input['id'] ?? null);
 $nome = $input['nome'] ?? '';
 $url = $input['url'] ?? '';
 $demo = $input['demo'] ?? '';
 $image = $input['image'] ?? '';
 
+$game = new Game();
+$game->id=$id;
+$game->nome=$nome;
+$game->url=$url;
+$game->demo=$demo;
+$game->image=$image;
 
-try {
+
+
+$game->save();
+$msg = new ApiMessage(true, $game->nome." salvo com sucesso");
+
+/*
     $db = (new Database())->getPdo();
 
     if ($id > 0) {
@@ -29,7 +46,7 @@ try {
         $stmt->execute(compact('nome', 'url', 'demo', 'image'));
         $msg = new ApiMessage(true, "Game criado com sucesso", ['id' => $db->lastInsertId()]);
     }
-
+*/
     $msg->toJson();
 } catch (Exception $e) {
     $msg = new ApiMessage(false, $e->getMessage());

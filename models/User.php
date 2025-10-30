@@ -1,117 +1,95 @@
 <?php
 
-class User
+class User extends DataObj
 {
-    public ?int $id;
+    protected string $tableName = 'users';
+    
+    //public int $id;
     public string $nome;
     public string $email;
-    public string $senha;
-    public string $criado_em;
-    
-    private Database $db;
+    public string $senha='';
+    public ?string $avatar='';
+    public ?string $criado_em;
 
-    public function __construct()
+   public function __construct()
     {
-        $this->db = new Database();
-        
+        $db =  Database::instance();
+        parent::__construct($db->getPdo());
+       // $this->createTable();
     }
 
     // Método para preencher dados manualmente
-    public function create(string $nome, string $email, string $senha, ?int $id = null, ?string $criado_em = null)
+    public function init(string $nome, string $email, string $senha, ?int $id = null, ?string $criado_em = null)
     {
-        $this->id = $id;
+        $this->id = 0;
         $this->nome = $nome;
         $this->email = $email;
         $this->senha = password_hash($senha, PASSWORD_DEFAULT);
         $this->criado_em = $criado_em ?? date('Y-m-d H:i:s');
     }
 
-    // Método para criar a partir de um array (por exemplo, do banco)
-    public static function createFromArray(array $data): User
+    
+    public static function findByEmail(string $email): ?User
     {
-        $user = new User();
-        $user->id = $data['id'] ?? null;
-        $user->nome = $data['nome'] ?? '';
-        $user->email = $data['email'] ?? '';
-        $user->senha = $data['senha'] ?? ''; // normalmente já está hash
-        $user->criado_em = $data['criado_em'] ?? date('Y-m-d H:i:s');
-        return $user;
-    }
+   // 1. Usa o método estático 'query' da BaseModel, passando a conexão $db
+        $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
+        
+        // NOVIDADE: Usamos placeholder nomeado (:email) no lugar de '?' 
+        // para maior clareza e padronização com a BaseModel.
+        $bindings = [':email' => $email];
 
-    public function __toString(): string
-    {
-        return json_encode([
-            'id' => $this->id,
-            'nome' => $this->nome,
-            'email' => $this->email,
-            'criado_em' => $this->criado_em
-        ], JSON_PRETTY_PRINT);
-    }
+        // 2. Chama a query()
+        $results = static::query( $sql, $bindings);
+
+        // 3. Retorna o primeiro resultado (ou null se o array estiver vazio)
+        return $results[0] ?? null;
     
-    /**/
-    public function save(): bool
-    {
-        if ($this->id > 0) {
-return $this->update();
-        } else {
-           return $this->insert();
-        }
-    }
-    
-    public function insert(): bool
-    {
-         $this->db->query(
-                "INSERT INTO users (nome, email, senha, criado_em) VALUES (?, ?, ?, ?)",
-                [$this->nome, $this->email, $this->senha, $this->criado_em]
-            );
-            
-            $this->id = (int)$this->db->getPdo()->lastInsertId();
-   
-            return true;
-    }
-    
-    public function update(): bool
-    {
-        if ($this->id > 0) {
-            // 🔧 Corrigido: UPDATE usa SET, não VALUES
-            return (bool) $this->db->query(
-                "UPDATE users SET nome = ?, email = ?, senha = ?, criado_em = ? WHERE id = ?",
-                [$this->nome, $this->email, $this->senha, $this->criado_em, $this->id]
-            );
-        } 
-        return false;
-    }
-    
-    
-    
-    
-    
-    public function findByEmail(string $email): ?User
-    {
-        $stmt = $this->db->query("SELECT * FROM users WHERE email = ?", [$email]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $data ? User::createFromArray($data) : null;
     }
 
     public function login($pass): ?bool
+{
+    $user = static::findByEmail($this->email);
+    
+    if ($user && password_verify($pass, $user->senha)) {
+        $this->populate($user->toArray());
+        return true;
+    } else {
+        // O throw está aqui APENAS PARA TESTE.
+        // Ele vai interromper a execução e mostrar a mensagem.
+        // A linha "return false" NUNCA será alcançada se esta exceção for lançada.
+       // throw new Exception("DEBUG: Login Falhou. User: ".json_encode($user)." Hash: ".$user->senha." Input Hash: ".password_hash($pass, PASSWORD_DEFAULT));
+    }
+    
+    // Este código abaixo NUNCA será alcançado se o throw acima for executado.
+    return false;
+}
+    
+    public function cadastrar(): ?bool
     {
-        $user = $this->findByEmail($this->email);
-        if ($user && password_verify($this->email, $pass)) {
-            return true;
+        $this->senha = password_hash($this->senha , PASSWORD_DEFAULT);
+        $this->criado_em = $criado_em ?? date('Y-m-d H:i:s');
+        
+      //iniciana transacção  
+        Database::instance()->beginTransaction();
+        try
+        {
+       //salva o user
+       $this->save();
+       //cria a primeira carteira
+       $carteira = new Carteira();
+       $carteira->userId=$this->id;
+       $carteira->nome='Principal';
+       $carteira->save();
+       //fecha a transacção 
+       Database::instance()->commit();
+       //retorna
+       return true;
         }
+    catch(ex $err){
+        Database::instance()->rollBack();
+    }
         return false;
     }
 
-    public function getAll(): array
-    {
-        $stmt = $this->db->query("SELECT * FROM users ORDER BY id DESC");
-        $users = [];
-
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $users[] = User::createFromArray($row);
-        }
-
-        return $users;
-    }
     
 }

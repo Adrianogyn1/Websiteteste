@@ -7,14 +7,16 @@ error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-if (!isset($_SESSION['id'])) 
+if (!isset($_SESSION['user'])) 
 {
     (new ApiMessage(false, 'Usuário não logado'))->toJson();
 }
 
-$userId = $_SESSION['id'] ?? 0;
+$userId = $_SESSION['user'] ?? 0;
 
 $page = intval($_GET['page'] ?? 1);
 
@@ -25,6 +27,8 @@ $carteiraId =intval($_GET['id'] ?? 0);;
 $offset = ($page - 1) * $pageSize;
 
 try {
+   
+   
     $db = (new Database())->getPdo();
 
     $params = [];
@@ -63,7 +67,7 @@ try {
     }
     
     $carteira = new Carteira();
-   $carteira= $carteira->read($carteiraId);
+   $carteira= Carteira::find($carteiraId);
     $fim = new \DateTime();
     $inicio = (clone $fim)->modify('-7 days');
      

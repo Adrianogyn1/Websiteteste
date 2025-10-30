@@ -1,8 +1,13 @@
 <?php
+
+try{
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 $msg = new ApiMessage(); // inicializa padrão: sucess=false, msg='', data=null
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -18,25 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $db = new Database();
 
-        $stmt = $db->query("SELECT * FROM users WHERE email = ?", [$email]);
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+$user = new User();
+$user->email=$email;
 
-        if (!$data) {
+
+/*if (!$user) {
             $msg->msg = "Usuário não encontrado.";
             $msg->toJson();
-        }
+        }*/
 
-        $user = User::createFromArray($data);
-
-        if (password_verify($senha, $user->senha)) {
-            $_SESSION['user'] = $user->email;
-           // $_SESSION['user']['id'] = $user->id;
-            $_SESSION['id'] = $user->id;
-            
-            
+        if ($user->login($senha))
+        {
+            $_SESSION['user'] = $user->id;
+         
             $msg->sucess = true;
             $msg->msg = "Logado com sucesso.";
-            $msg->data = $user; // opcional: retorna dados do usuário
         } else {
             $msg->msg = "Usuário ou senha inválidos.";
         }
@@ -45,6 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg->msg = "Erro interno no servidor. ".$err->getMessage();
         // opcional: $msg->data = ['error' => $err->getMessage()];
     }
+}
+    
+}
+catch (Throwable $err) {
+    echo  "erro interno ".$err->getMessage();
+    exit;
 }
 
 // envia a resposta JSON e encerra

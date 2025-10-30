@@ -33,6 +33,13 @@ function recursiveCopy($src, $dst) {
     $files = scandir($src);
     foreach ($files as $file) {
         if ($file === '.' || $file === '..') continue;
+        
+        // Adição: Ignora o arquivo .env
+        if ($file === '.env') {
+            echo "\n"; // Opcional: Para debug no HTML
+            continue; // Esta linha faz o loop pular o código de cópia e ir para o próximo arquivo
+        }
+        
         $srcPath = "$src/$file";
         $dstPath = "$dst/$file";
 

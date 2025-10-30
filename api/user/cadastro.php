@@ -7,7 +7,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 $msg = new ApiMessage(); // inicializa padrão: sucess=false, msg='', data=null
 $msg->msg="erro!";
@@ -25,13 +27,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg->msg= 'Preencha todos os campos';
         $msg->toJson();
     }
+    
+    
 
     
     
     $user = new User();
-    $user->create($nome,$email,$senha);
-    $user->save();
+    $user->nome=$nome;
+    $user->email=$email;
+    $user->senha=$senha;
     
+    $user->save();
+    $msg->sucess=true;
+    $msg->msg="Cadastrado com sucesso verifique seu e-mail";
+    AppSite::sendEmailCadastro($user);
         
        
     } catch (Throwable $e) 

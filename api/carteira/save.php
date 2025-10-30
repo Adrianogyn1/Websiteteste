@@ -6,10 +6,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once(dirname(__DIR__, 2) . '/autoload.php');
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // O PayerId virá da sessão, se estiver configurado
-$userId = $_SESSION['id'] ?? 0; 
+$userId = $_SESSION['user'] ?? 0; 
 
 // --- VERIFICAÇÃO DE LOGIN ---
 // Se não estiver logado OU o ID da sessão for inválido
@@ -52,6 +54,7 @@ try {
 
     // 3. VERIFICAR LIMITE DE CARTEIRAS (APENAS PARA NOVAS CRIAÇÕES)
     if ($id === 0) {
+        
         $stmtCount = $db->prepare("SELECT COUNT(*) as total FROM Carteira WHERE PayerId = :uid");
         $stmtCount->execute([':uid' => $userId]);
         $total = (int)$stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
@@ -82,7 +85,7 @@ try {
     $carteira->meta = $meta;
     $carteira->url = $url;
     $carteira->login = $login;
-    
+
     // A senha SÓ deve ser atualizada se um novo valor foi fornecido.
     if (!empty($senha)) {
         // O __set() da classe Carteira deve aplicar o password_hash() aqui.
