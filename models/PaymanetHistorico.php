@@ -5,7 +5,7 @@
 
 class PaymanetHistorico extends BaseModel 
 {
-    protected string $tableName = 'paymanet_historico'; // Define a tabela
+    protected string $tableName = 'PaymanetHistorico'; // Define a tabela
     
     // --- PROPRIEDADES DE BANCO DE DADOS ---
     

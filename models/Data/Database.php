@@ -16,7 +16,7 @@ class Database
     public string $pass = 'comsenha12';
     
     // Caminho do arquivo SQLite (Valor padrão)
-    public string $sqlite_path = __DIR__ . '/app_database.sqlite';
+    public string $sqlite_path = __DIR__ . '../app_database.sqlite';
 
     // Tempo de espera para SQLite em caso de bloqueio (em segundos)
     private int $sqlite_timeout = 5;
@@ -32,7 +32,7 @@ class Database
         // Correção de path: garantindo que o getenv seja chamado corretamente
         $env_sqlite_path   = getenv('SQLITE_PATH');
         // Se a variável de ambiente existir, usa o path, senão usa o padrão
-        $this->sqlite_path = $env_sqlite_path ? dirname(__DIR__, 1) . $env_sqlite_path : $this->sqlite_path;
+        $this->sqlite_path = $env_sqlite_path ? dirname(__DIR__, 2) .$env_sqlite_path : $this->sqlite_path;
         
         // Determina o driver a partir do ambiente (MySQL é o padrão se não for definido)
         $driver = getenv('DB_DRIVER') ?? 'mysql';

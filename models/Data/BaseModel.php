@@ -117,6 +117,69 @@ abstract class BaseModel
         return $properties;
     }
     
+    // Na BaseModel.php, dentro de public function populate(array $dados): self
+
+public function populate(array $dados): self
+{
+    $reflector = new \ReflectionClass($this);
+
+    foreach ($dados as $chave => $valor) {
+        $chave = strtolower($chave); 
+        
+        if (!$reflector->hasProperty($chave)) continue;
+        
+        $property = $reflector->getProperty($chave);
+        if (!$property->isPublic()) continue;
+        
+        $type = $property->getType();
+        $phpType = $type ? $type->getName() : null;
+        $isNullable = $type ? $type->allowsNull() : true;
+
+        // --- CORREÇÃO DE SEGURANÇA: TRATAMENTO DE VALOR NULO DO DB ---
+        // Se o valor do banco de dados for NULL (ou 0, que pode ser interpretado como NULL/int 
+        // para tipos nullable), e a propriedade permitir nulo, definimos como null.
+        // O valor '0' ou vazio pode ser o problema aqui, se for a representação do NULL no DB.
+        if ($valor === null || ($valor === 0 && $isNullable && ($phpType === 'DateTime' || $phpType === 'int'))) {
+            if ($isNullable) {
+                $this->$chave = null;
+                continue; // Pula para a próxima propriedade
+            }
+        }
+        // --- FIM DA CORREÇÃO DE SEGURANÇA ---
+        
+        
+        // 1. Tratamento de DateTime
+        if ($phpType === 'DateTime' && is_string($valor)) {
+            try {
+                // Tenta criar o objeto DateTime a partir da string
+                $this->$chave = new \DateTime($valor);
+            } catch (\Exception $e) {
+                // Se falhar na criação (string inválida), define como null se for nullable
+                $this->$chave = $isNullable ? null : $valor; 
+            }
+        } 
+        // 2. Tratamento de Enum
+        else if ($phpType && \enum_exists($phpType) && $valor !== null) {
+            // ... (Lógica de Enum Conversion, lançando EnumConversionException) ...
+            if (\is_subclass_of($phpType, \BackedEnum::class)) {
+                try {
+                    $this->$chave = $phpType::from($valor); 
+                } catch (\ValueError $e) {
+                    // Lançar exceção personalizada
+                    throw new \EnumConversionException($valor, $phpType, 0, $e);
+                }
+            } 
+        }
+        // 3. Tratamento Padrão
+        else {
+            // Atribui o valor padrão (int, string, float, etc.)
+            $this->$chave = $valor;
+        }
+    }
+    return $this;
+}
+    
+    /*
     public function populate(array $dados): self
     {
         $reflector = new \ReflectionClass($this);
@@ -157,6 +220,7 @@ abstract class BaseModel
         }
         return $this;
     }
+    */
     
     public function toArray(): array
     {

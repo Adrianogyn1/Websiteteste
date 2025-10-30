@@ -4,7 +4,7 @@
 // Pressupõe que BaseModel, Database, IgnoreInDatabase e TransasaoType (Enum) estejam carregados.
 
 // A classe Carteira deve herdar de BaseModel (ou CollectionModel) para usar o ORM
-class Carteira extends BaseModel
+class Carteira extends DataObj
 {
     // Define a tabela (mantém a primeira letra maiúscula, mas o ORM deve lidar com isso)
     protected string $tableName = 'carteira'; // Alterado para o plural minúsculo (convenção)
@@ -48,12 +48,7 @@ class Carteira extends BaseModel
         return true;
     }
     
-    // --- CONSTRUTOR ---
-    /** * Removemos o construtor manual.
-     * O construtor da BaseModel cuidará de:
-     * 1. Conexão PDO: $this->db = Database::instance()->getPdo();
-     * 2. Definição da Tabela: (já está definida acima).
-     */
+
     // public function __construct() { parent::__construct(); } // É implícito
     
     
@@ -89,7 +84,7 @@ class Carteira extends BaseModel
     public static function allUser(int $userId): array
     {
         // Usa o método query estático da BaseModel
-        $sql = 'SELECT * FROM carteiras WHERE PayerId = :id ORDER BY id DESC';
+        $sql = 'SELECT * FROM carteira WHERE PayerId = :id ORDER BY id DESC';
         /** @var array<Carteira> $result */
         $result = static::query($sql, [':id' => $userId]);
         
@@ -246,6 +241,76 @@ class Carteira extends BaseModel
         // Mantendo a sua lógica original (que parece ser Saldo Final + Movimentação Líquida):
         return ($retiradaPeriodo - $depositoPeriodo) + $saldoFinal;
     }
+    
+
+    /**
+     * Busca o histórico de transações para esta carteira com filtro de datas e paginação.
+     *
+     * @param \DateTime|null $dataInicio Data mínima inclusiva (opcional).
+     * @param \DateTime|null $dataFim Data máxima inclusiva (opcional).
+     * @param int $take O número de registros a buscar (LIMIT).
+     * @param int $skip O número de registros a pular (OFFSET).
+     * @param string $orderBy O campo para ordenação (padrão: data DESC).
+     * @return array<\PaymanetHistorico> Um array contendo instâncias da classe PaymanetHistorico.
+     */
+    public function getHistorico(
+        ?\DateTime $dataInicio = null,
+        ?\DateTime $dataFim = null,
+        int $take = 10, 
+        int $skip = 0, 
+        string $orderBy = 'data DESC'
+    ): array
+    {
+        // 1. Verifica se a carteira tem um ID válido
+        if ($this->id === null) {
+            return [];
+        }
+
+        // 2. Monta a cláusula WHERE base e os bindings
+      $where='';
+      $bindings=[];
+       $where .= 'carteiraId = :carteiraId';
+       $bindings = [':carteiraId' => $this->id];
+        
+        // 3. Adiciona filtro de data (Se $dataInicio e $dataFim forem fornecidos)
+        if ($dataInicio instanceof \DateTime && $dataFim instanceof \DateTime) {
+            // Usa 'BETWEEN' para incluir as datas limite.
+            // Formato padrão SQL: YYYY-MM-DD HH:MM:SS
+            $where .= ' AND data BETWEEN :dataInicio AND :dataFim';
+            $bindings[':dataInicio'] = $dataInicio->format('Y-m-d H:i:s');
+            // Nota: Para incluir o dia inteiro de $dataFim, é comum usar o formato 23:59:59
+            // Se o objeto $dataFim já estiver no horário exato de término do dia, use-o diretamente.
+            $bindings[':dataFim'] = $dataFim->format('Y-m-d H:i:s'); 
+        } 
+        // 3b. Filtro apenas por data inicial (opcional)
+        else if ($dataInicio instanceof \DateTime) {
+             $where .= ' AND data >= :dataInicio';
+             $bindings[':dataInicio'] = $dataInicio->format('Y-m-d H:i:s');
+        }
+        // 3c. Filtro apenas por data final (opcional)
+        else if ($dataFim instanceof \DateTime) {
+             $where .= ' AND data <= :dataFim';
+             $bindings[':dataFim'] = $dataFim->format('Y-m-d H:i:s');
+        }
+
+
+        // 4. Define os parâmetros de consulta
+        $options = [
+            'where' => $where,
+            'bindings' => $bindings,
+            'orderBy' => $orderBy,
+            'take' => $take,
+            'skip' => $skip,
+        ];
+
+        // 5. Usa o método all() da BaseModel, especificando a classe de destino.
+        /** @var array<\PaymanetHistorico> $historico */
+        $historico =\PaymanetHistorico::all($options);
+        
+        return $historico;
+    }
+
+
     
     // --- EXPORTAÇÃO DE DADOS ---
     

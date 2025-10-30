@@ -8,13 +8,16 @@ $carteira = new Carteira();
 $carteira->PayerId=1;
 
 //$carts=$carteira->all($db);
-$carts=$carteira->allUser($carteira->PayerId);
+$carts=Carteira::allUser(1);
 
+$inicio = new DateTime('2024-10-01 00:00:00');
+$fim = new DateTime('2025-10-30 23:59:59'); // Inclui o dia 30 inteiro
 foreach ($carts as $value) {
-   // echo  $value->nome.' R$ '.$value->saldo.", ";
+    echo json_encode($value->getHistorico(/*$inicio,$fim,20,0*/));
+  //  echo $value->nome.' R$ '.$value->saldo.", ";
 }
 
-//echo Carteira::getLastRawSql();
+echo Carteira::getLastRawSql();
 //$dados= Carteira::all();
 //$carteira->exporta('sql','ambos','data.txt');
 //echo $sql;
@@ -24,7 +27,7 @@ foreach ($carts as $value) {
 
 $carteira->save();*/
 
-//echo json_encode(['carteira'=>$carteira, 'raw'=> Carteira::getLastRawSql()]);
+echo json_encode(['carteira'=>$carteira, 'raw'=> Carteira::getLastRawSql()]);
  
 
 

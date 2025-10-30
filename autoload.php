@@ -1,5 +1,7 @@
 <?php
 
+//$path_root=__DIR__;
+
 require_once(__DIR__.'/models/Enums.php');
 //carrega as variáveis de env
 require_once('load_env.php');

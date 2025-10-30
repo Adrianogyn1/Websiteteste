@@ -32,7 +32,7 @@ $carteira->PayerId=$userId;
 $carteiras=$carteira->allUser($carteira->PayerId);
 
 $msg = new ApiMessage(true, "Lista carregada", [
-    'data' => array_map(fn($c) => $c->toArray(), $carteiras), // converte objetos para array
+    'data' => $carteiras,//array_map(fn($c) => $c->toArray(), $carteiras), // converte objetos para array
 ]);
 $msg->toJson();
 exit;
